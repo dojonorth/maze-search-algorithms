@@ -1,4 +1,4 @@
-package bbc.north.dojo;
+package bbc.north.dojo.maze.generator;
 
 import org.junit.Test;
 

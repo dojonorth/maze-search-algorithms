@@ -1,4 +1,4 @@
-package bbc.north.dojo;
+package bbc.north.dojo.maze.generator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +58,10 @@ public class MazeGenerator {
 
     private static boolean between(int v, int upper) {
         return (v >= 0) && (v < upper);
+    }
+
+    public int[][] maze() {
+        return maze;
     }
 
     private enum DIR {
