@@ -5,26 +5,65 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.shape.StrokeLineJoin;
 import javafx.stage.Stage;
 
 public class MazeUI extends Application {
 
     private MazeGenerator generator;
-    private Integer height;
-    private Integer width;
+    private Integer height = 10;
+    private Integer width = 10;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("BBC North Dojo: Solving a Maze");
 
+        Group root = new Group();
+
+        Canvas canvas = new Canvas(600, 600);
+        GraphicsContext gc = initialiseGraphicsContext(canvas);
+
+        generator = new MazeGenerator(10, 10);
+        drawMaze(gc);
+
+//        drawView(root, gc);
+
+        root.getChildren().add(canvas);
+
+        primaryStage.setScene(new Scene(root, Color.BLACK));
+        primaryStage.show();
+    }
+
+    private GraphicsContext initialiseGraphicsContext(Canvas canvas) {
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setFill(Color.BLACK);
+        gc.setStroke(Color.GREEN);
+        gc.setLineCap( StrokeLineCap.ROUND );
+        gc.setLineJoin( StrokeLineJoin.ROUND );
+        gc.setLineWidth(3);
+
+        BoxBlur blur = new BoxBlur();
+        blur.setWidth(1);
+        blur.setHeight(1);
+        blur.setIterations(1);
+        gc.setEffect(blur);
+        return gc;
+    }
+
+    private void drawView(Group root, GraphicsContext gc) {
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(5);
@@ -56,42 +95,66 @@ public class MazeUI extends Application {
 
             @Override
             public void handle(ActionEvent event) {
+                System.out.println("Button clicked!");
                 height = Integer.valueOf(heightTextField.getText());
                 width = Integer.valueOf(widthTextField.getText());
                 generator = new MazeGenerator(height, width);
-                drawMaze();
+                drawMaze(gc);
             }
         });
 
         GridPane.setConstraints(btn, 0, 4);
         grid.getChildren().addAll(fieldsBox, btn);
-
-        // Draw a grid below
-
-        primaryStage.setScene(new Scene(grid, 600, 600, Color.BLACK));
-        primaryStage.show();
+        root.getChildren().add(grid);
     }
 
-    void drawMaze() {
+    void drawMaze(GraphicsContext gc) {
         int[][] maze = generator.maze();
+        int xPos = 20,
+            yPos = 20,
+            length = 40,
+            gap = 10;
 
         for (int i = 0; i < width; i++) {
+            xPos = 20;
             // draw the north edge
             for (int j = 0; j < height; j++) {
+                if ((maze[j][i] & 1) == 0) {
+                    gc.strokeLine(xPos, yPos, xPos + length, yPos); // horizontal
+                }
+                xPos += length + gap;
 
                 System.out.print((maze[j][i] & 1) == 0 ? "+---" : "+   ");
             }
             System.out.println("+");
+
+            xPos = 20;
             // draw the west edge
             for (int j = 0; j < height; j++) {
+                if ((maze[j][i] & 8) == 0) {
+                    gc.strokeLine(xPos, yPos, xPos, yPos + length); // vertical
+                }
+                xPos += length + gap;
+
                 System.out.print((maze[j][i] & 8) == 0 ? "|   " : "    ");
             }
+            gc.strokeLine(xPos, yPos, xPos, yPos + length); // vertical
             System.out.println("|");
+            yPos += length + gap;
         }
         // draw the bottom line
+
+        xPos = 20; // reset x pos to western edge
+
         for (int j = 0; j < height; j++) {
+            gc.strokeLine(xPos, yPos, xPos + length, yPos); // horizontal
             System.out.print("+---");
+            xPos += length + gap;
         }
         System.out.println("+");
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

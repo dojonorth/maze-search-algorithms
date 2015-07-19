@@ -6,7 +6,7 @@ public class MazeGeneratorTest {
 
     @Test
     public void canGenerateMaze() throws Exception {
-        MazeGenerator maze = new MazeGenerator(10, 10);
+        MazeGenerator maze = new MazeGenerator(30, 30);
         maze.display();
     }
 }
