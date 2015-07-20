@@ -24,8 +24,8 @@ import javafx.stage.Stage;
 public class MazeUI extends Application {
 
     private MazeGenerator generator;
-    private Integer height = 10;
-    private Integer width = 10;
+    private Integer height = 15;
+    private Integer width = 15;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -33,10 +33,10 @@ public class MazeUI extends Application {
 
         Group root = new Group();
 
-        Canvas canvas = new Canvas(600, 600);
+        Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
-        generator = new MazeGenerator(10, 10);
+        generator = new MazeGenerator(height, width);
         drawMaze(gc);
 
 //        drawView(root, gc);
