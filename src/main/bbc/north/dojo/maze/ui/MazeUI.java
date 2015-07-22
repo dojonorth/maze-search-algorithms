@@ -24,8 +24,8 @@ import javafx.stage.Stage;
 public class MazeUI extends Application {
 
     private MazeGenerator generator;
-    private Integer height = 15;
-    private Integer width = 15;
+    private Integer height = 5;
+    private Integer width = 5;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -128,8 +128,8 @@ public class MazeUI extends Application {
         int[][] maze = generator.maze();
         int xPos = 20,
             yPos = 20,
-            length = 40,
-            gap = 10;
+            length = 20,
+            gap = 5;
 
         for (int i = 0; i < width; i++) {
             xPos = 20;
