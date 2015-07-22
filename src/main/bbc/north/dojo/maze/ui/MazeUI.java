@@ -33,37 +33,43 @@ public class MazeUI extends Application {
 
         Group root = new Group();
 
-        Canvas canvas = new Canvas(800, 800);
-        GraphicsContext gc = initialiseGraphicsContext(canvas);
+        drawMazeView(root);
 
-        generator = new MazeGenerator(height, width);
-        drawMaze(gc);
-
-//        drawView(root, gc);
-
-        root.getChildren().add(canvas);
-
-        primaryStage.setScene(new Scene(root, Color.BLACK));
+        primaryStage.setScene(new Scene(root, Color.WHITE));
         primaryStage.show();
     }
 
     private GraphicsContext initialiseGraphicsContext(Canvas canvas) {
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.setFill(Color.BLACK);
+        gc.setFill(Color.WHITE);
+        gc.fillRect(0, 0, 600, 600);
         gc.setStroke(Color.GREEN);
-        gc.setLineCap( StrokeLineCap.ROUND );
-        gc.setLineJoin( StrokeLineJoin.ROUND );
+        gc.setLineCap(StrokeLineCap.ROUND);
+        gc.setLineJoin(StrokeLineJoin.ROUND);
         gc.setLineWidth(3);
 
+        setBoxBlur(gc);
+        return gc;
+    }
+
+    private void setBoxBlur(GraphicsContext gc) {
         BoxBlur blur = new BoxBlur();
         blur.setWidth(1);
         blur.setHeight(1);
         blur.setIterations(1);
         gc.setEffect(blur);
-        return gc;
     }
 
-    private void drawView(Group root, GraphicsContext gc) {
+    private void removeBoxBlur(GraphicsContext gc) {
+        gc.setEffect(null);
+    }
+
+    private void drawMazeView(Group root) {
+        Canvas canvas = new Canvas(800, 800);
+        GraphicsContext gc = initialiseGraphicsContext(canvas);
+
+        GridPane.setConstraints(canvas, 0, 6);
+
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(5);
@@ -98,13 +104,23 @@ public class MazeUI extends Application {
                 System.out.println("Button clicked!");
                 height = Integer.valueOf(heightTextField.getText());
                 width = Integer.valueOf(widthTextField.getText());
+
+                removeBoxBlur(gc);
+                // clear old maze
+                gc.clearRect(0, 0,
+                        canvas.getHeight(),
+                        canvas.getWidth());
+                setBoxBlur(gc);
+
                 generator = new MazeGenerator(height, width);
+
                 drawMaze(gc);
             }
         });
 
         GridPane.setConstraints(btn, 0, 4);
-        grid.getChildren().addAll(fieldsBox, btn);
+
+        grid.getChildren().addAll(fieldsBox, btn, canvas);
         root.getChildren().add(grid);
     }
 
