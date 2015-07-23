@@ -1,6 +1,6 @@
 package bbc.north.dojo.maze.ui;
 
-import bbc.north.dojo.maze.generator.MazeGenerator;
+import bbc.north.dojo.maze.generator.Maze;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,7 +23,7 @@ import javafx.stage.Stage;
 
 public class MazeUI extends Application {
 
-    private MazeGenerator generator;
+    private Maze maze;
     private Integer height = 5;
     private Integer width = 5;
 
@@ -112,7 +112,7 @@ public class MazeUI extends Application {
                         canvas.getWidth());
                 setBoxBlur(gc);
 
-                generator = new MazeGenerator(height, width);
+                maze = new Maze(height, width, "recursive-backtracker");
 
                 drawMaze(gc);
             }
@@ -125,7 +125,7 @@ public class MazeUI extends Application {
     }
 
     void drawMaze(GraphicsContext gc) {
-        int[][] maze = generator.maze();
+        int[][] maze = this.maze.representation();
         int xPos = 20,
             yPos = 20,
             length = 20,

@@ -1,14 +1,11 @@
 package bbc.north.dojo.maze.generator;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 /*
  * recursive backtracking algorithm
  * shamelessly borrowed from the ruby at
  * http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking
 */
-public class MazeGenerator {
+public class Maze {
 
     private final int x;
     private final int y;
@@ -20,82 +17,33 @@ public class MazeGenerator {
     public static final int[][] mazeProblemFour = new int[][] {{2,3,3,5,4,6,7,3,3,5,6,5,6,3,5},{6,3,1,12,12,12,10,3,5,10,9,12,10,5,12},{12,6,3,9,14,9,4,6,9,2,3,11,1,12,12},{14,9,2,3,11,5,12,10,3,5,6,3,3,9,12},{10,5,6,5,2,11,11,5,4,12,12,6,7,1,12},{4,10,9,10,3,5,6,9,12,10,9,8,12,6,13},{14,5,4,6,3,9,12,6,11,5,6,3,9,12,8},{12,10,9,12,4,6,9,10,5,12,14,3,5,10,5},{12,6,5,12,12,12,6,3,9,12,8,6,13,4,12},{14,9,10,9,12,12,10,3,5,10,5,12,10,13,12},{12,2,7,5,10,11,3,3,9,6,9,12,2,9,12},{10,3,9,10,3,3,5,4,6,11,3,9,6,3,13},{6,5,6,7,3,5,12,10,9,6,3,3,9,6,9},{12,10,9,10,5,8,12,6,5,10,5,6,5,10,5},{10,3,3,1,10,3,11,9,10,3,9,8,10,3,9}};
     public static final int[][] mazeProblemFive = new int[][] {{2,3,5,6,3,3,7,5,6,3,3,3,7,3,5},{6,5,12,12,6,3,9,8,10,5,4,6,9,4,12},{12,12,12,12,10,3,5,6,5,10,13,10,5,14,9},{12,10,9,10,5,4,10,9,14,1,12,4,12,10,5},{10,5,6,5,10,15,3,1,14,5,14,9,10,5,8},{6,9,12,10,5,8,6,5,8,10,9,6,5,14,5},{10,3,9,4,12,6,9,10,3,3,3,9,12,8,12},{6,3,7,13,12,10,7,5,2,7,7,1,10,3,13},{14,1,12,8,10,5,12,12,6,9,12,6,3,3,9},{8,6,13,6,3,9,12,12,12,2,13,12,6,3,5},{6,9,8,12,4,6,9,12,14,5,8,10,9,4,12},{12,6,3,9,10,9,6,9,8,10,7,5,6,11,9},{12,10,3,3,3,5,14,3,3,5,12,12,10,5,4},{14,1,6,5,6,9,10,3,1,12,12,10,1,10,13},{10,3,9,10,11,3,3,3,3,9,10,3,3,3,9}};
 
-    public MazeGenerator(int x, int y) {
+    public Maze(int x, int y, String type) {
         this.x = x;
         this.y = y;
-        maze = new int[this.x][this.y];
-        generateMaze(0, 0);
+        DefaultMazeGenerator generator = MazeGeneratorFactory.createInstance(x, y, type);
+        maze = generator.generateMaze(0, 0);
     }
 
     public void display() {
-        for (int i = 0; i < y; i++) {
-            // draw the bbc.north edge
-            for (int j = 0; j < x; j++) {
-                System.out.print((maze[j][i] & 1) == 0 ? "+---" : "+   ");
-            }
-            System.out.println("+");
-            // draw the west edge
-            for (int j = 0; j < x; j++) {
-                System.out.print((maze[j][i] & 8) == 0 ? "|   " : "    ");
-            }
-            System.out.println("|");
-        }
-        // draw the bottom line
-        for (int j = 0; j < x; j++) {
-            System.out.print("+---");
-        }
-        System.out.println("+");
+        MazeViewer.display(this);
     }
 
-    private void generateMaze(int cx, int cy) {
-        DIR[] dirs = DIR.values();
-        Collections.shuffle(Arrays.asList(dirs));
-        for (DIR dir : dirs) {
-            int nx = cx + dir.dx;
-            int ny = cy + dir.dy;
-            if (between(nx, x) && between(ny, y)
-                    && (maze[nx][ny] == 0)) {
-                maze[cx][cy] |= dir.bit;
-                maze[nx][ny] |= dir.opposite.bit;
-                generateMaze(nx, ny);
-            }
-        }
-    }
-
-    private static boolean between(int v, int upper) {
-        return (v >= 0) && (v < upper);
-    }
-
-    public int[][] maze() {
+    public int[][] representation() {
         return maze;
     }
-
-    private enum DIR {
-        N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
-        private final int bit;
-        private final int dx;
-        private final int dy;
-        private DIR opposite;
-
-        // use the static initializer to resolve forward references
-        static {
-            N.opposite = S;
-            S.opposite = N;
-            E.opposite = W;
-            W.opposite = E;
-        }
-
-        private DIR(int bit, int dx, int dy) {
-            this.bit = bit;
-            this.dx = dx;
-            this.dy = dy;
-        }
-    };
 
     public static void main(String[] args) {
         int x = args.length >= 1 ? (Integer.parseInt(args[0])) : 8;
         int y = args.length == 2 ? (Integer.parseInt(args[1])) : 8;
-        MazeGenerator maze = new MazeGenerator(x, y);
+        Maze maze = new Maze(x, y, "recursive-backtracker");
         maze.display();
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getX() {
+        return x;
     }
 }

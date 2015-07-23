@@ -2,11 +2,11 @@ package bbc.north.dojo.maze.generator;
 
 import org.junit.Test;
 
-public class MazeGeneratorTest {
+public class MazeTest {
 
     @Test
     public void canGenerateMaze() throws Exception {
-        MazeGenerator maze = new MazeGenerator(30, 30);
+        Maze maze = new Maze(30, 30, "recursive-backtracker");
         maze.display();
     }
 }
