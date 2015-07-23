@@ -2,6 +2,8 @@ package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.generator.Maze;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -10,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.BoxBlur;
@@ -91,8 +94,14 @@ public class MazeUI extends Application {
 
         GridPane.setConstraints(hbWidth, 0, 2);
 
+        ObservableList<String> mazeGenerationTypes = FXCollections.observableArrayList(
+            "Recursive BackTracker (Default)"
+        );
+
+        final ComboBox comboBox = new ComboBox(mazeGenerationTypes);
+
         VBox fieldsBox = new VBox();
-        fieldsBox.getChildren().addAll(hbHeight, hbWidth);
+        fieldsBox.getChildren().addAll(hbHeight, hbWidth, comboBox);
 
         // Create button that allows you to generate a new maze
         Button btn = new Button();
