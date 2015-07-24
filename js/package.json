@@ -1,0 +1,11 @@
+{
+  "name": "maze-search-algorithms",
+  "description": "Maze search algorithms dojo",
+  "version": "1.0.0",
+  "release": "1",
+  "scripts": {},
+  "dependencies": {
+    "lodash": "^3.10.0"
+  },
+  "devDependencies": {}
+}

@@ -3,3 +3,4 @@
 out
 .idea
 java/target
+js/node_modules
