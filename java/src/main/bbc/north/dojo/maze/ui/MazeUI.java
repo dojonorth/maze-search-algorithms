@@ -1,6 +1,7 @@
 package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.Maze;
+import bbc.north.dojo.maze.viewer.MazeViewer;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,14 +37,17 @@ public class MazeUI extends Application {
     final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
 
     private Maze maze;
-    private Integer height = 5;
-    private Integer width = 5;
+    private Integer colY = 5;
+    private Integer colX = 5;
 
     final Label heightLabel = new Label("Height:");
     final TextField heightTextField = new TextField();
 
     final Label widthLabel = new Label("Label:");
     final TextField widthTextField = new TextField();
+
+    public static final int CELL_LENGTH = 20;
+    public static final int GAP = 5;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -61,7 +65,7 @@ public class MazeUI extends Application {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, 600, 600);
-        gc.setStroke(Color.GREEN);
+        gc.setStroke(Color.BLACK);
         gc.setLineCap(StrokeLineCap.ROUND);
         gc.setLineJoin(StrokeLineJoin.ROUND);
         gc.setLineWidth(3);
@@ -113,7 +117,7 @@ public class MazeUI extends Application {
 
         // Create button that allows you to generate a new maze
         Button btn = new Button();
-        btn.setText("Generate Random Maze");
+        btn.setText("Generate Maze");
         btn.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -128,9 +132,9 @@ public class MazeUI extends Application {
                 setBoxBlur(gc);
 
                 if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
-                    height = Integer.valueOf(heightTextField.getText());
-                    width = Integer.valueOf(widthTextField.getText());
-                    maze = new Maze(height, width, "recursive-backtracker");
+                    colY = Integer.valueOf(heightTextField.getText());
+                    colX = Integer.valueOf(widthTextField.getText());
+                    maze = new Maze(colY, colX, "recursive-backtracker");
                 } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
                     maze = new Maze(Maze.mazeProblemOne);
                 } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
@@ -182,48 +186,57 @@ public class MazeUI extends Application {
 
     void drawMaze(GraphicsContext gc) {
         int[][] maze = this.maze.representation();
-        int xPos = 20,
-                yPos = 20,
-                length = 20,
-                gap = 5;
+        colX = this.maze.getX();
+        colY = this.maze.getY();
 
-        for (int i = 0; i < width; i++) {
+        int xPos, yPos = 20;
+
+        for (int i = 0; i < colX; i++) {
             xPos = 20;
             // draw the north edge
-            for (int j = 0; j < height; j++) {
+            for (int j = 0; j < colY; j++) {
                 if ((maze[j][i] & 1) == 0) {
-                    gc.strokeLine(xPos, yPos, xPos + length, yPos); // horizontal
+                    gc.strokeLine(xPos, yPos, xPos + CELL_LENGTH, yPos); // horizontal
                 }
-                xPos += length + gap;
-
-                System.out.print((maze[j][i] & 1) == 0 ? "+---" : "+   ");
+                xPos += CELL_LENGTH + GAP;
             }
-            System.out.println("+");
 
             xPos = 20;
             // draw the west edge
-            for (int j = 0; j < height; j++) {
+            for (int j = 0; j < colY; j++) {
                 if ((maze[j][i] & 8) == 0) {
-                    gc.strokeLine(xPos, yPos, xPos, yPos + length); // vertical
+                    gc.strokeLine(xPos, yPos, xPos, yPos + CELL_LENGTH); // vertical
                 }
-                xPos += length + gap;
+                xPos += CELL_LENGTH + GAP;
 
-                System.out.print((maze[j][i] & 8) == 0 ? "|   " : "    ");
             }
-            gc.strokeLine(xPos, yPos, xPos, yPos + length); // vertical
-            System.out.println("|");
-            yPos += length + gap;
+            gc.strokeLine(xPos, yPos, xPos, yPos + CELL_LENGTH); // vertical
+            yPos += CELL_LENGTH + GAP;
         }
         // draw the bottom line
 
         xPos = 20; // reset x pos to western edge
 
-        for (int j = 0; j < height; j++) {
-            gc.strokeLine(xPos, yPos, xPos + length, yPos); // horizontal
-            System.out.print("+---");
-            xPos += length + gap;
+        for (int j = 0; j < colY; j++) {
+            gc.strokeLine(xPos, yPos, xPos + CELL_LENGTH, yPos); // horizontal
+            xPos += CELL_LENGTH + GAP;
         }
-        System.out.println("+");
+
+        gc.setFill(Color.RED);
+        gc.fillOval(30, 30, 5, 5);
+
+        gc.setFill(Color.GREEN);
+        gc.fillOval(calculateXOffsetForEntrance(), calculateYOffsetForEntrance(), 5, 5);
+
+        MazeViewer.display(this.maze);
+    }
+
+    private int calculateYOffsetForEntrance() {
+        return ((colY * (CELL_LENGTH + GAP)) + 15) - (CELL_LENGTH / 2);
+    }
+
+    private int calculateXOffsetForEntrance() {
+        return ((colX * (CELL_LENGTH + GAP)) + 15) - (CELL_LENGTH / 2);
     }
 
     public static void main(String[] args) {

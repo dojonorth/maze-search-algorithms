@@ -3,7 +3,7 @@ package bbc.north.dojo.maze.generator;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class DefaultMazeGenerator {
+public class DefaultMazeGenerator implements MazeGenerator {
 
     private final int x;
     private final int y;
@@ -15,6 +15,7 @@ public class DefaultMazeGenerator {
         maze = new int[this.x][this.y];
     }
 
+    @Override
     public int[][] generateMaze(int cx, int cy) {
         DIR[] dirs = DIR.values();
         Collections.shuffle(Arrays.asList(dirs));
