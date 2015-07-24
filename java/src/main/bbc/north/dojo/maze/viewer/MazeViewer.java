@@ -1,4 +1,6 @@
-package bbc.north.dojo.maze.generator;
+package bbc.north.dojo.maze.viewer;
+
+import bbc.north.dojo.maze.Maze;
 
 public class MazeViewer {
 

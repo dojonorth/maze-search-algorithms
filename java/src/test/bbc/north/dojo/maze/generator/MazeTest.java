@@ -1,5 +1,6 @@
 package bbc.north.dojo.maze.generator;
 
+import bbc.north.dojo.maze.Maze;
 import org.junit.Test;
 
 public class MazeTest {

@@ -1,6 +1,6 @@
 package bbc.north.dojo.maze.ui;
 
-import bbc.north.dojo.maze.generator.Maze;
+import bbc.north.dojo.maze.Maze;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -26,9 +26,24 @@ import javafx.stage.Stage;
 
 public class MazeUI extends Application {
 
+    public static final String MAZE_ONE = "Maze 1 (Backtrack)";
+    public static final String MAZE_TWO = "Maze 2 (Backtrack)";
+    public static final String MAZE_THREE = "Maze 3 (Backtrack)";
+    public static final String MAZE_FOUR = "Maze 4 (Backtrack)";
+    public static final String MAZE_FIVE = "Maze 5 (Backtrack)";
+
+    final static String DEFAULT_MAZE_TYPE = "Recursive BackTracker (Default)";
+    final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
+
     private Maze maze;
     private Integer height = 5;
     private Integer width = 5;
+
+    final Label heightLabel = new Label("Height:");
+    final TextField heightTextField = new TextField();
+
+    final Label widthLabel = new Label("Label:");
+    final TextField widthTextField = new TextField();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -78,30 +93,23 @@ public class MazeUI extends Application {
         grid.setVgap(5);
         grid.setHgap(5);
 
-        Label heightLabel = new Label("Height:");
-        final TextField heightTextField = new TextField();
-        HBox hbHeight = new HBox();
-        hbHeight.getChildren().addAll(heightLabel, heightTextField);
-        hbHeight.setSpacing(10);
-
+        HBox hbHeight = createLabel(heightLabel, heightTextField);
         GridPane.setConstraints(hbHeight, 0, 0);
 
-        Label widthLabel = new Label("Label:");
-        final TextField widthTextField = new TextField();
-        HBox hbWidth = new HBox();
-        hbWidth.getChildren().addAll(widthLabel, widthTextField);
-        hbWidth.setSpacing(10);
-
+        HBox hbWidth = createLabel(widthLabel, widthTextField);
         GridPane.setConstraints(hbWidth, 0, 2);
 
-        ObservableList<String> mazeGenerationTypes = FXCollections.observableArrayList(
-            "Recursive BackTracker (Default)"
-        );
-
-        final ComboBox comboBox = new ComboBox(mazeGenerationTypes);
+        final ComboBox mazeGenComboBox = addMazeGeneratorComboBox();
+        final ComboBox<String> preGenComboBox = addPreGeneratedMazeTypes();
 
         VBox fieldsBox = new VBox();
-        fieldsBox.getChildren().addAll(hbHeight, hbWidth, comboBox);
+        fieldsBox.getChildren().addAll(hbHeight, hbWidth);
+
+        VBox dropdowns = new VBox();
+        dropdowns.getChildren().addAll(mazeGenComboBox, preGenComboBox);
+
+        VBox mazeOptions = new VBox();
+        mazeOptions.getChildren().addAll(fieldsBox, dropdowns);
 
         // Create button that allows you to generate a new maze
         Button btn = new Button();
@@ -111,8 +119,6 @@ public class MazeUI extends Application {
             @Override
             public void handle(ActionEvent event) {
                 System.out.println("Button clicked!");
-                height = Integer.valueOf(heightTextField.getText());
-                width = Integer.valueOf(widthTextField.getText());
 
                 removeBoxBlur(gc);
                 // clear old maze
@@ -121,7 +127,21 @@ public class MazeUI extends Application {
                         canvas.getWidth());
                 setBoxBlur(gc);
 
-                maze = new Maze(height, width, "recursive-backtracker");
+                if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
+                    height = Integer.valueOf(heightTextField.getText());
+                    width = Integer.valueOf(widthTextField.getText());
+                    maze = new Maze(height, width, "recursive-backtracker");
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
+                    maze = new Maze(Maze.mazeProblemOne);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
+                    maze = new Maze(Maze.mazeProblemTwo);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
+                    maze = new Maze(Maze.mazeProblemThree);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
+                    maze = new Maze(Maze.mazeProblemFour);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
+                    maze = new Maze(Maze.mazeProblemFive);
+                }
 
                 drawMaze(gc);
             }
@@ -129,16 +149,43 @@ public class MazeUI extends Application {
 
         GridPane.setConstraints(btn, 0, 4);
 
-        grid.getChildren().addAll(fieldsBox, btn, canvas);
+        grid.getChildren().addAll(mazeOptions, btn, canvas);
         root.getChildren().add(grid);
+    }
+
+    private HBox createLabel(Label label, TextField textField) {
+        HBox hbHeight = new HBox();
+        hbHeight.getChildren().addAll(label, textField);
+        hbHeight.setSpacing(10);
+        return hbHeight;
+    }
+
+    private ComboBox<String> addPreGeneratedMazeTypes() {
+
+        ObservableList<String> preGeneratedMazes = FXCollections.observableArrayList(
+                DEFAULT_PRE_GEN_MAZE_TYPE,
+                MAZE_ONE, MAZE_TWO, MAZE_THREE, MAZE_FOUR, MAZE_FIVE
+        );
+
+        final ComboBox<String> preGenComboBox = new ComboBox(preGeneratedMazes);
+        preGenComboBox.setValue(DEFAULT_PRE_GEN_MAZE_TYPE);
+        return preGenComboBox;
+    }
+
+    private ComboBox addMazeGeneratorComboBox() {
+        ObservableList<String> mazeGenerationTypes = FXCollections.observableArrayList(DEFAULT_MAZE_TYPE);
+
+        final ComboBox mazeGenComboBox = new ComboBox(mazeGenerationTypes);
+        mazeGenComboBox.setValue(DEFAULT_MAZE_TYPE);
+        return mazeGenComboBox;
     }
 
     void drawMaze(GraphicsContext gc) {
         int[][] maze = this.maze.representation();
         int xPos = 20,
-            yPos = 20,
-            length = 20,
-            gap = 5;
+                yPos = 20,
+                length = 20,
+                gap = 5;
 
         for (int i = 0; i < width; i++) {
             xPos = 20;

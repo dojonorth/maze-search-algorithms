@@ -1,4 +1,4 @@
-package bbc.north.dojo.maze;
+package bbc.north.dojo.maze.solver;
 
 public class MazeSolver {
 
