@@ -57,8 +57,4 @@ public class Maze {
     public int getX() {
         return x;
     }
-
-    public Maze load(int[][] predefinedMaze) {
-        return new Maze(predefinedMaze);
-    }
 }

@@ -17,13 +17,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.BoxBlur;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.stage.Stage;
+
+import static bbc.north.dojo.maze.generator.DefaultMazeGenerator.DIR;
 
 public class MazeUI extends Application {
 
@@ -33,6 +35,9 @@ public class MazeUI extends Application {
     public static final String MAZE_FOUR = "Maze 4 (Backtrack)";
     public static final String MAZE_FIVE = "Maze 5 (Backtrack)";
 
+    public static final DIR[] MAZE_ONE_ROUTE =
+            new DIR[]{ DIR.N, DIR.N, DIR.N, DIR.W, DIR.N };
+
     final static String DEFAULT_MAZE_TYPE = "Recursive BackTracker (Default)";
     final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
 
@@ -40,10 +45,11 @@ public class MazeUI extends Application {
     private Integer colY = 5;
     private Integer colX = 5;
 
+    final Label dimensionsLabel = new Label("Dimensions");
     final Label heightLabel = new Label("Height:");
     final TextField heightTextField = new TextField();
 
-    final Label widthLabel = new Label("Label:");
+    final Label widthLabel = new Label("Width:");
     final TextField widthTextField = new TextField();
 
     public static final int CELL_LENGTH = 20;
@@ -87,33 +93,36 @@ public class MazeUI extends Application {
     }
 
     private void drawMazeView(Group root) {
-        Canvas canvas = new Canvas(800, 800);
+        Canvas canvas = new Canvas(800, 600);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
-        GridPane.setConstraints(canvas, 0, 6);
+        GridPane.setConstraints(canvas, 0, 4);
 
         GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(12);
         grid.setPadding(new Insets(10, 10, 10, 10));
-        grid.setVgap(5);
-        grid.setHgap(5);
 
-        HBox hbHeight = createLabel(heightLabel, heightTextField);
-        GridPane.setConstraints(hbHeight, 0, 0);
+        ColumnConstraints labelConstraints = new ColumnConstraints();
+        labelConstraints.setMaxWidth(100);
+        grid.getColumnConstraints().add(labelConstraints);
 
-        HBox hbWidth = createLabel(widthLabel, widthTextField);
-        GridPane.setConstraints(hbWidth, 0, 2);
+        grid.add(dimensionsLabel, 0, 0);
+        grid.add(heightLabel, 0, 1);
+        grid.add(widthLabel, 0, 2);
+        grid.add(heightTextField, 1, 1);
+        grid.add(widthTextField, 1, 2);
 
         final ComboBox mazeGenComboBox = addMazeGeneratorComboBox();
         final ComboBox<String> preGenComboBox = addPreGeneratedMazeTypes();
 
-        VBox fieldsBox = new VBox();
-        fieldsBox.getChildren().addAll(hbHeight, hbWidth);
-
-        VBox dropdowns = new VBox();
-        dropdowns.getChildren().addAll(mazeGenComboBox, preGenComboBox);
-
-        VBox mazeOptions = new VBox();
-        mazeOptions.getChildren().addAll(fieldsBox, dropdowns);
+        grid.add(mazeGenComboBox, 3, 1);
+        grid.add(preGenComboBox, 3, 2);
+//        VBox dropdowns = new VBox();
+//        dropdowns.getChildren().addAll(mazeGenComboBox, preGenComboBox);
+//
+//        VBox mazeOptions = new VBox();
+//        mazeOptions.getChildren().addAll(dropdowns);
 
         // Create button that allows you to generate a new maze
         Button btn = new Button();
@@ -131,37 +140,40 @@ public class MazeUI extends Application {
                         canvas.getWidth());
                 setBoxBlur(gc);
 
-                if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
-                    colY = Integer.valueOf(heightTextField.getText());
-                    colX = Integer.valueOf(widthTextField.getText());
-                    maze = new Maze(colY, colX, "recursive-backtracker");
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
-                    maze = new Maze(Maze.mazeProblemOne);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
-                    maze = new Maze(Maze.mazeProblemTwo);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
-                    maze = new Maze(Maze.mazeProblemThree);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
-                    maze = new Maze(Maze.mazeProblemFour);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
-                    maze = new Maze(Maze.mazeProblemFive);
-                }
+                if (!"".equals(heightTextField.getText()) &&
+                    !"".equals(widthTextField.getText())) {
 
-                drawMaze(gc);
+                    if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
+                            colY = Integer.valueOf(heightTextField.getText());
+                            colX = Integer.valueOf(widthTextField.getText());
+                            maze = new Maze(colY, colX, "recursive-backtracker");
+                    } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
+                        maze = new Maze(Maze.mazeProblemOne);
+                    } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
+                        maze = new Maze(Maze.mazeProblemTwo);
+                    } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
+                        maze = new Maze(Maze.mazeProblemThree);
+                    } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
+                        maze = new Maze(Maze.mazeProblemFour);
+                    } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
+                        maze = new Maze(Maze.mazeProblemFive);
+                    }
+
+                    drawMaze(gc);
+                }
             }
         });
 
-        GridPane.setConstraints(btn, 0, 4);
-
-        grid.getChildren().addAll(mazeOptions, btn, canvas);
+        grid.add(btn, 0, 4);
+        grid.add(canvas, 0, 5);
         root.getChildren().add(grid);
     }
 
     private HBox createLabel(Label label, TextField textField) {
-        HBox hbHeight = new HBox();
-        hbHeight.getChildren().addAll(label, textField);
-        hbHeight.setSpacing(10);
-        return hbHeight;
+        HBox hbox = new HBox();
+        hbox.getChildren().addAll(label, textField);
+        hbox.setSpacing(10);
+        return hbox;
     }
 
     private ComboBox<String> addPreGeneratedMazeTypes() {
@@ -230,6 +242,28 @@ public class MazeUI extends Application {
 
         MazeViewer.display(this.maze);
     }
+
+//    void renderRoute(GraphicsContext gc, DIR[] route) {
+//        DoubleProperty routeXPos = new SimpleDoubleProperty();
+//        DoubleProperty routeYPos = new SimpleDoubleProperty();
+//
+//        KeyFrame[] keyFrames = new KeyFrame[route.length];
+//        for (int i = 0; i < route.length; i++) {
+//            keyFrames[i] = new KeyFrame(
+//                        Duration.millis(300),
+//                        new KeyValue(routeXPos, calculateNextPos(route[i])),
+//
+//                    );
+//        }
+//
+//        Timeline routeTimeline = new Timeline();
+//
+//    }
+
+//    private Position calculateNextPos(DIR dir) {
+//        if ()
+//        return new Position()
+//    }
 
     private int calculateYOffsetForEntrance() {
         return ((colY * (CELL_LENGTH + GAP)) + 15) - (CELL_LENGTH / 2);
