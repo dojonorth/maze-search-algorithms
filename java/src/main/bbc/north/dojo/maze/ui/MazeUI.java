@@ -2,7 +2,11 @@ package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.Maze;
 import bbc.north.dojo.maze.viewer.MazeViewer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -19,8 +23,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.stage.Stage;
@@ -118,11 +122,6 @@ public class MazeUI extends Application {
 
         grid.add(mazeGenComboBox, 3, 1);
         grid.add(preGenComboBox, 3, 2);
-//        VBox dropdowns = new VBox();
-//        dropdowns.getChildren().addAll(mazeGenComboBox, preGenComboBox);
-//
-//        VBox mazeOptions = new VBox();
-//        mazeOptions.getChildren().addAll(dropdowns);
 
         // Create button that allows you to generate a new maze
         Button btn = new Button();
@@ -167,13 +166,6 @@ public class MazeUI extends Application {
         grid.add(btn, 0, 4);
         grid.add(canvas, 0, 5);
         root.getChildren().add(grid);
-    }
-
-    private HBox createLabel(Label label, TextField textField) {
-        HBox hbox = new HBox();
-        hbox.getChildren().addAll(label, textField);
-        hbox.setSpacing(10);
-        return hbox;
     }
 
     private ComboBox<String> addPreGeneratedMazeTypes() {
@@ -238,32 +230,69 @@ public class MazeUI extends Application {
         gc.fillOval(30, 30, 5, 5);
 
         gc.setFill(Color.GREEN);
-        gc.fillOval(calculateXOffsetForEntrance(), calculateYOffsetForEntrance(), 5, 5);
 
         MazeViewer.display(this.maze);
+
+        Circle entranceMarker = new Circle(calculateXOffsetForEntrance(), calculateYOffsetForEntrance(), 5, Color.web("green", 0.5));
+
+        Group path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+        path.getChildren().add(entranceMarker);
+
+        renderRoute(gc, MAZE_ONE_ROUTE, path);
     }
 
-//    void renderRoute(GraphicsContext gc, DIR[] route) {
-//        DoubleProperty routeXPos = new SimpleDoubleProperty();
-//        DoubleProperty routeYPos = new SimpleDoubleProperty();
-//
-//        KeyFrame[] keyFrames = new KeyFrame[route.length];
-//        for (int i = 0; i < route.length; i++) {
-//            keyFrames[i] = new KeyFrame(
-//                        Duration.millis(300),
-//                        new KeyValue(routeXPos, calculateNextPos(route[i])),
-//
-//                    );
-//        }
-//
-//        Timeline routeTimeline = new Timeline();
-//
-//    }
+    private Group generatePath(DIR[] route, Circle entranceMarker) {
+        Group path = new Group();
+        for (int i = 0; i < route.length; i++) {
+            // create next circle in the path with Opacity 0 so we can animate each circle
+            Circle nextInPath = new Circle(calculateNextPosX(route[i]), calculateNextPosY(route[i]), 5, Color.web("green", 0));
+            path.getChildren().add(nextInPath);
+        }
+        return path;
+    }
 
-//    private Position calculateNextPos(DIR dir) {
-//        if ()
-//        return new Position()
-//    }
+    void renderRoute(GraphicsContext gc, DIR[] route, Group path) {
+        DoubleProperty routeXPos = new SimpleDoubleProperty();
+        DoubleProperty routeYPos = new SimpleDoubleProperty();
+
+        path.getChildren().forEach();
+
+        Timeline timeline = new Timeline();
+        KeyFrame[] keyFrames = new KeyFrame[route.length];
+        for (int i = 0; i < route.length; i++) {
+            // create next circle in the path with Opacity 0 so we can animate each circle
+//            keyFrames[i] = new KeyFrame(
+//                        Duration.ZERO,
+//                        new KeyValue(routeXPos, calculateNextPosX(route[i])),
+//                        new KeyValue(routeYPos, calculateNextPosY(route[i]))
+//                    );
+        }
+        timeline.getKeyFrames().addAll(keyFrames);
+
+        gc.add
+
+        timeline.play();
+    }
+
+    private int calculateNextPosX(DIR dir) {
+        int multiplier = 0;
+        if (dir.equals(dir.E)) {
+            multiplier = 1;
+        } else if (dir.equals(dir.W)) {
+            multiplier = -1;
+        }
+        return multiplier * CELL_LENGTH;
+    }
+
+    private int calculateNextPosY(DIR dir) {
+        int multiplier = 0;
+        if (dir.equals(dir.N)) {
+            multiplier = 1;
+        } else if (dir.equals(dir.S)) {
+            multiplier = -1;
+        }
+        return multiplier * CELL_LENGTH;
+    }
 
     private int calculateYOffsetForEntrance() {
         return ((colY * (CELL_LENGTH + GAP)) + 15) - (CELL_LENGTH / 2);
