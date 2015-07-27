@@ -3,6 +3,7 @@ package bbc.north.dojo.maze.ui;
 import bbc.north.dojo.maze.Maze;
 import bbc.north.dojo.maze.viewer.MazeViewer;
 import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.beans.property.DoubleProperty;
@@ -13,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -28,6 +30,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static bbc.north.dojo.maze.generator.DefaultMazeGenerator.DIR;
 
@@ -97,7 +103,7 @@ public class MazeUI extends Application {
     }
 
     private void drawMazeView(Group root) {
-        Canvas canvas = new Canvas(800, 600);
+        Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
         GridPane.setConstraints(canvas, 0, 4);
@@ -235,42 +241,38 @@ public class MazeUI extends Application {
 
         Circle entranceMarker = new Circle(calculateXOffsetForEntrance(), calculateYOffsetForEntrance(), 5, Color.web("green", 0.5));
 
-        Group path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-        path.getChildren().add(entranceMarker);
+        Group pathGroup = new Group();
+        List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+        pathGroup.getChildren().addAll(path);
 
-        renderRoute(gc, MAZE_ONE_ROUTE, path);
+        renderRoute(MAZE_ONE_ROUTE, path);
     }
 
-    private Group generatePath(DIR[] route, Circle entranceMarker) {
-        Group path = new Group();
+    private List<Circle> generatePath(DIR[] route, Circle entranceMarker) {
+        List<Circle> path = new ArrayList<>();
+        path.add(entranceMarker);
         for (int i = 0; i < route.length; i++) {
             // create next circle in the path with Opacity 0 so we can animate each circle
-            Circle nextInPath = new Circle(calculateNextPosX(route[i]), calculateNextPosY(route[i]), 5, Color.web("green", 0));
-            path.getChildren().add(nextInPath);
+            Circle nextInPath = new Circle(calculateNextPosX(route[i]), calculateNextPosY(route[i]), 5, Color.web("green", 0.0));
+            path.add(nextInPath);
         }
+
         return path;
     }
 
-    void renderRoute(GraphicsContext gc, DIR[] route, Group path) {
-        DoubleProperty routeXPos = new SimpleDoubleProperty();
-        DoubleProperty routeYPos = new SimpleDoubleProperty();
-
-        path.getChildren().forEach();
-
+    void renderRoute(DIR[] route, List<Circle> path) {
         Timeline timeline = new Timeline();
         KeyFrame[] keyFrames = new KeyFrame[route.length];
         for (int i = 0; i < route.length; i++) {
-            // create next circle in the path with Opacity 0 so we can animate each circle
-//            keyFrames[i] = new KeyFrame(
-//                        Duration.ZERO,
-//                        new KeyValue(routeXPos, calculateNextPosX(route[i])),
-//                        new KeyValue(routeYPos, calculateNextPosY(route[i]))
-//                    );
+
+            Circle pathEntry = path.get(i+1); // we've already rendered first entry
+            // animate Opacity 0
+            keyFrames[i] = new KeyFrame(
+                Duration.millis(500),
+                new KeyValue(pathEntry.opacityProperty(), 1)
+            );
         }
         timeline.getKeyFrames().addAll(keyFrames);
-
-        gc.add
-
         timeline.play();
     }
 
