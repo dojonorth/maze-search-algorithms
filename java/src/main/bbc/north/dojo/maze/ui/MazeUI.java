@@ -163,7 +163,18 @@ public class MazeUI extends Application {
                         maze = new Maze(Maze.mazeProblemFive);
                     }
 
-                    drawMaze(gc, root);
+                    drawMaze(gc);
+
+                    Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
+                    Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
+
+                    List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+                    pathGroup.getChildren().add(entranceMarker);
+                    pathGroup.getChildren().add(exitMarker);
+                    pathGroup.getChildren().addAll(path);
+                    root.getChildren().add(pathGroup);
+
+                    animateRoute(path);
                 }
             }
         });
@@ -193,7 +204,7 @@ public class MazeUI extends Application {
         return mazeGenComboBox;
     }
 
-    void drawMaze(GraphicsContext gc, Group root) {
+    void drawMaze(GraphicsContext gc) {
         int[][] maze = this.maze.representation();
         colX = this.maze.getX();
         colY = this.maze.getY();
@@ -231,25 +242,13 @@ public class MazeUI extends Application {
             xPos += CELL_LENGTH + GAP;
         }
 
-        Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
-        root.getChildren().add(exitMarker);
-
         MazeViewer.display(this.maze);
-
-        Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
-
-        List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-        pathGroup.getChildren().addAll(path);
-        root.getChildren().add(pathGroup);
-
-        renderRoute(MAZE_ONE_ROUTE, path);
     }
 
     private List<Circle> generatePath(DIR[] route, Circle entranceMarker) {
         double previousX = entranceMarker.getCenterX(),
             previousY = entranceMarker.getCenterY();
         List<Circle> path = new ArrayList<>();
-        path.add(entranceMarker);
         for (int i = 0; i < route.length; i++) {
             // create next circle in the path with Opacity 0 so we can animate each circle
             Circle nextInPath = new Circle(previousX + calculateNextPosX(route[i]), previousY + calculateNextPosY(route[i]), 5, Color.web("green", 0.0));
@@ -261,15 +260,15 @@ public class MazeUI extends Application {
         return path;
     }
 
-    void renderRoute(DIR[] route, List<Circle> path) {
+    void animateRoute(List<Circle> path) {
 
         int currentKeyFrameTimeInMs = 0,
             keyframeTimeInMs = 500;
         Timeline timeline = new Timeline();
         List<KeyFrame> keyFrames = new ArrayList<>();
-        for (int i = 0; i < route.length; i++) {
+        for (int i = 1; i < path.size(); i++) {
 
-            Circle pathEntry = path.get(i+1); // we've already rendered first entry
+            Circle pathEntry = path.get(i); // we've already rendered first entry
             // animate Opacity 0% to 100% for each circle
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs),
