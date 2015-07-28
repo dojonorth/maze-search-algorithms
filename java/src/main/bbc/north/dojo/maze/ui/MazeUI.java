@@ -130,52 +130,52 @@ public class MazeUI extends Application {
         // Create button that allows you to generate a new maze
         Button btn = new Button();
         btn.setText("Generate Maze");
-        btn.setOnAction(new EventHandler<ActionEvent>() {
+        btn.setOnAction(event -> {
+            System.out.println("Button clicked!");
 
-            @Override
-            public void handle(ActionEvent event) {
-                System.out.println("Button clicked!");
+            removeBoxBlur(gc);
+            // clear old maze
+            gc.clearRect(0, 0,
+                    canvas.getHeight(),
+                    canvas.getWidth());
+            pathGroup.getChildren().clear();
+            root.getChildren().remove(pathGroup);
+            setBoxBlur(gc);
 
-                removeBoxBlur(gc);
-                // clear old maze
-                gc.clearRect(0, 0,
-                        canvas.getHeight(),
-                        canvas.getWidth());
-                pathGroup.getChildren().clear();
-                setBoxBlur(gc);
+            if (!"".equals(heightTextField.getText()) &&
+                !"".equals(widthTextField.getText())) {
 
-                if (!"".equals(heightTextField.getText()) &&
-                    !"".equals(widthTextField.getText())) {
-
-                    if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
-                            colY = Integer.valueOf(heightTextField.getText());
-                            colX = Integer.valueOf(widthTextField.getText());
-                            maze = new Maze(colY, colX, "recursive-backtracker");
-                    } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
-                        maze = new Maze(Maze.mazeProblemOne);
-                    } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
-                        maze = new Maze(Maze.mazeProblemTwo);
-                    } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
-                        maze = new Maze(Maze.mazeProblemThree);
-                    } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
-                        maze = new Maze(Maze.mazeProblemFour);
-                    } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
-                        maze = new Maze(Maze.mazeProblemFive);
-                    }
-
-                    drawMaze(gc);
-
-                    Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
-                    Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
-
-                    List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-                    pathGroup.getChildren().add(entranceMarker);
-                    pathGroup.getChildren().add(exitMarker);
-                    pathGroup.getChildren().addAll(path);
-                    root.getChildren().add(pathGroup);
-
-                    animateRoute(path);
+                if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
+                        colY = Integer.valueOf(heightTextField.getText());
+                        colX = Integer.valueOf(widthTextField.getText());
+                        maze = new Maze(colY, colX, "recursive-backtracker");
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
+                    maze = new Maze(Maze.mazeProblemOne);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
+                    maze = new Maze(Maze.mazeProblemTwo);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
+                    maze = new Maze(Maze.mazeProblemThree);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
+                    maze = new Maze(Maze.mazeProblemFour);
+                } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
+                    maze = new Maze(Maze.mazeProblemFive);
                 }
+
+                drawMaze(gc);
+
+                Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
+                root.getChildren().add(entranceMarker);
+                Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
+                root.getChildren().add(exitMarker);
+
+                List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+//                path.add(entranceMarker);
+//                path.add(exitMarker);
+
+                animateRoute(path);
+
+                pathGroup.getChildren().addAll(path);
+                root.getChildren().add(pathGroup);
             }
         });
 
@@ -251,7 +251,7 @@ public class MazeUI extends Application {
         List<Circle> path = new ArrayList<>();
         for (int i = 0; i < route.length; i++) {
             // create next circle in the path with Opacity 0 so we can animate each circle
-            Circle nextInPath = new Circle(previousX + calculateNextPosX(route[i]), previousY + calculateNextPosY(route[i]), 5, Color.web("green", 0.0));
+            Circle nextInPath = new Circle(previousX + calculateNextPosX(route[i]), previousY + calculateNextPosY(route[i]), 5, Color.web("green", 1));
             path.add(nextInPath);
             previousX += calculateNextPosX(route[i]);
             previousY += calculateNextPosY(route[i]);
@@ -263,12 +263,12 @@ public class MazeUI extends Application {
     void animateRoute(List<Circle> path) {
 
         int currentKeyFrameTimeInMs = 0,
-            keyframeTimeInMs = 500;
+            keyframeTimeInMs = 400;
         Timeline timeline = new Timeline();
         List<KeyFrame> keyFrames = new ArrayList<>();
-        for (int i = 1; i < path.size(); i++) {
+        for (int i = 0; i < path.size(); i++) {  // we've already rendered first entry
 
-            Circle pathEntry = path.get(i); // we've already rendered first entry
+            Circle pathEntry = path.get(i);
             // animate Opacity 0% to 100% for each circle
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs),
