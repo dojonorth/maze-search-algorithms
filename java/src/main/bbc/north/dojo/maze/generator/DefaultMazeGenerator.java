@@ -5,9 +5,9 @@ import java.util.Collections;
 
 public class DefaultMazeGenerator implements MazeGenerator {
 
-    private final int x;
-    private final int y;
-    public int[][] maze;
+    protected final int x;
+    protected final int y;
+    protected int[][] maze;
 
     public DefaultMazeGenerator(int x, int y) {
         this.x = x;
@@ -17,6 +17,10 @@ public class DefaultMazeGenerator implements MazeGenerator {
 
     @Override
     public int[][] generateMaze(int cx, int cy) {
+        return recursiveBacktrack(cx, cy);
+    }
+
+    protected int[][] recursiveBacktrack(int cx, int cy) {
         DIR[] dirs = DIR.values();
         Collections.shuffle(Arrays.asList(dirs));
         for (DIR dir : dirs) {
@@ -32,7 +36,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
         return maze;
     }
 
-    private static boolean between(int v, int upper) {
+    protected static boolean between(int v, int upper) {
         return (v >= 0) && (v < upper);
     }
 
@@ -57,5 +61,15 @@ public class DefaultMazeGenerator implements MazeGenerator {
             this.dy = dy;
         }
 
+    };
+
+    public enum HISTORY {
+        T(1), T2(2), T1(4), DEAD_END(8);
+
+        final int bit;
+
+        private HISTORY(int bit) {
+            this.bit = bit;
+        }
     };
 }
