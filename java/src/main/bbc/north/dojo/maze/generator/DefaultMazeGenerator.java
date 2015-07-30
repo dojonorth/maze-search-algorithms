@@ -8,11 +8,13 @@ public class DefaultMazeGenerator implements MazeGenerator {
     protected final int x;
     protected final int y;
     protected int[][] maze;
+    protected int[][] traversal;
 
     public DefaultMazeGenerator(int x, int y) {
         this.x = x;
         this.y = y;
         maze = new int[this.x][this.y];
+        traversal = new int[this.x][this.y];
     }
 
     @Override
@@ -63,12 +65,12 @@ public class DefaultMazeGenerator implements MazeGenerator {
 
     };
 
-    public enum HISTORY {
+    public enum TRAVERSAL {
         T(1), T2(2), T1(4), DEAD_END(8);
 
         final int bit;
 
-        private HISTORY(int bit) {
+        private TRAVERSAL(int bit) {
             this.bit = bit;
         }
     };
