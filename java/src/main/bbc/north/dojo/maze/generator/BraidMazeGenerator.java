@@ -24,7 +24,6 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
             entranceY = y - 1;
 
         int current = maze[entranceX][entranceY];
-        int entrance = current;
         traverse(current, cx, cy);
         return null;
     }
@@ -97,6 +96,9 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
                 traverse(current, nx, ny);
             } else {
                 // we're finished - reached last dead end
+                // return the traversed tree - how though?
+                // each time we move to the next in the path we should store the path in a Tree Map
+                // if the tree reaches a dead end, delete all of the nodes up the tree until we reach a tree node with leafs that has more than one avenue
             }
         }
     }
