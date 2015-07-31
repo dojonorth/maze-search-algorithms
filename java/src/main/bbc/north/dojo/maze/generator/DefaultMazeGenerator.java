@@ -30,8 +30,8 @@ public class DefaultMazeGenerator implements MazeGenerator {
             int ny = cy + dir.dy;
             if (between(nx, x) && between(ny, y)
                     && (maze[nx][ny] == 0)) {
-                maze[cx][cy] |= dir.bit;
-                maze[nx][ny] |= dir.opposite.bit;
+                maze[cx][cy] |= dir.state;
+                maze[nx][ny] |= dir.opposite.state;
                 recursiveBacktrack(nx, ny);
             }
         }
@@ -45,7 +45,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
     public enum DIR {
         N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
 
-        final int bit;
+        final int state;
         final int dx;
         final int dy;
         DIR opposite;
@@ -57,21 +57,53 @@ public class DefaultMazeGenerator implements MazeGenerator {
             W.opposite = E;
         }
 
-        private DIR(int bit, int dx, int dy) {
-            this.bit = bit;
+        private DIR(int state, int dx, int dy) {
+            this.state = state;
             this.dx = dx;
             this.dy = dy;
         }
 
+        public static DIR[] toArray(int availableDirections) {
+            if (availableDirections == 1) {
+                return new DIR[] { DIR.N };
+            } else if (availableDirections == 2) {
+                return new DIR[] { DIR.S };
+            } else if (availableDirections == 3) {
+                return new DIR[] { DIR.N, DIR.S };
+            } else if (availableDirections == 4) {
+                return new DIR[] { DIR.E };
+            } else if (availableDirections == 5) {
+                return new DIR[] { DIR.E, DIR.N };
+            } else if (availableDirections == 6) {
+                return new DIR[] { DIR.E, DIR.S };
+            } else if (availableDirections == 7) {
+                return new DIR[] { DIR.N, DIR.S, DIR.E };
+            } else if (availableDirections == 8) {
+                return new DIR[] { DIR.W };
+            } else if (availableDirections == 9) {
+                return new DIR[] { DIR.W, DIR.N };
+            } else if (availableDirections == 10) {
+                return new DIR[] { DIR.W, DIR.S };
+            } else if (availableDirections == 11) {
+                return new DIR[] { DIR.W, DIR.S, DIR.N };
+            } else if (availableDirections == 12) {
+                return new DIR[] { DIR.W, DIR.E };
+            } else if (availableDirections == 13) {
+                return new DIR[] { DIR.N, DIR.E, DIR.W };
+            } else if (availableDirections == 14) {
+                return new DIR[] { DIR.S, DIR.E, DIR.W };
+            }
+            return new DIR[0];  //To change body of created methods use File | Settings | File Templates.
+        }
     };
 
     public enum TRAVERSAL {
-        TRAVERSED(1), AVAILABLE_2(2), AVAILABLE_1(4), DEAD_END(8), EXIT(99);
+        TRAVERSED(1), AVAILABLE_1(2), AVAILABLE_2(4), AVAILABLE_3(8), DEAD_END(16), EXIT(32);
 
-        final int bit;
+        final int state;
 
         private TRAVERSAL(int bit) {
-            this.bit = bit;
+            this.state = bit;
         }
     };
 }

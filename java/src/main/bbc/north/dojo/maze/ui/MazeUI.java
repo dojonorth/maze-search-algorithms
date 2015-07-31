@@ -1,6 +1,7 @@
 package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.Maze;
+import bbc.north.dojo.maze.generator.MazeGenerationFailureException;
 import bbc.north.dojo.maze.viewer.MazeViewer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -69,7 +70,11 @@ public class MazeUI extends Application {
 
         Group root = new Group();
 
-        drawMazeView(root);
+        try {
+            drawMazeView(root);
+        } catch (MazeGenerationFailureException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
         primaryStage.setScene(new Scene(root, Color.WHITE));
         primaryStage.show();
@@ -100,7 +105,7 @@ public class MazeUI extends Application {
         gc.setEffect(null);
     }
 
-    private void drawMazeView(Group root) {
+    private void drawMazeView(Group root) throws MazeGenerationFailureException {
         Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
@@ -148,7 +153,11 @@ public class MazeUI extends Application {
                 if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
                         colY = Integer.valueOf(heightTextField.getText());
                         colX = Integer.valueOf(widthTextField.getText());
+                    try {
                         maze = new Maze(colY, colX, "recursive-backtracker");
+                    } catch (MazeGenerationFailureException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
                 } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
                     maze = new Maze(Maze.mazeProblemOne);
                 } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {

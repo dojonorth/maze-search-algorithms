@@ -1,6 +1,7 @@
 package bbc.north.dojo.maze;
 
 import bbc.north.dojo.maze.generator.DefaultMazeGenerator;
+import bbc.north.dojo.maze.generator.MazeGenerationFailureException;
 import bbc.north.dojo.maze.generator.MazeGeneratorFactory;
 import bbc.north.dojo.maze.viewer.MazeViewer;
 
@@ -21,7 +22,7 @@ public class Maze {
     public static final int[][] mazeProblemFour = new int[][] {{2,3,3,5,4,6,7,3,3,5,6,5,6,3,5},{6,3,1,12,12,12,10,3,5,10,9,12,10,5,12},{12,6,3,9,14,9,4,6,9,2,3,11,1,12,12},{14,9,2,3,11,5,12,10,3,5,6,3,3,9,12},{10,5,6,5,2,11,11,5,4,12,12,6,7,1,12},{4,10,9,10,3,5,6,9,12,10,9,8,12,6,13},{14,5,4,6,3,9,12,6,11,5,6,3,9,12,8},{12,10,9,12,4,6,9,10,5,12,14,3,5,10,5},{12,6,5,12,12,12,6,3,9,12,8,6,13,4,12},{14,9,10,9,12,12,10,3,5,10,5,12,10,13,12},{12,2,7,5,10,11,3,3,9,6,9,12,2,9,12},{10,3,9,10,3,3,5,4,6,11,3,9,6,3,13},{6,5,6,7,3,5,12,10,9,6,3,3,9,6,9},{12,10,9,10,5,8,12,6,5,10,5,6,5,10,5},{10,3,3,1,10,3,11,9,10,3,9,8,10,3,9}};
     public static final int[][] mazeProblemFive = new int[][] {{2,3,5,6,3,3,7,5,6,3,3,3,7,3,5},{6,5,12,12,6,3,9,8,10,5,4,6,9,4,12},{12,12,12,12,10,3,5,6,5,10,13,10,5,14,9},{12,10,9,10,5,4,10,9,14,1,12,4,12,10,5},{10,5,6,5,10,15,3,1,14,5,14,9,10,5,8},{6,9,12,10,5,8,6,5,8,10,9,6,5,14,5},{10,3,9,4,12,6,9,10,3,3,3,9,12,8,12},{6,3,7,13,12,10,7,5,2,7,7,1,10,3,13},{14,1,12,8,10,5,12,12,6,9,12,6,3,3,9},{8,6,13,6,3,9,12,12,12,2,13,12,6,3,5},{6,9,8,12,4,6,9,12,14,5,8,10,9,4,12},{12,6,3,9,10,9,6,9,8,10,7,5,6,11,9},{12,10,3,3,3,5,14,3,3,5,12,12,10,5,4},{14,1,6,5,6,9,10,3,1,12,12,10,1,10,13},{10,3,9,10,11,3,3,3,3,9,10,3,3,3,9}};
 
-    public Maze(int x, int y, String type) {
+    public Maze(int x, int y, String type) throws MazeGenerationFailureException {
         this.x = x;
         this.y = y;
         DefaultMazeGenerator generator = MazeGeneratorFactory.createInstance(x, y, type);
@@ -43,7 +44,7 @@ public class Maze {
         return maze;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws MazeGenerationFailureException {
         int x = args.length >= 1 ? (Integer.parseInt(args[0])) : 8;
         int y = args.length == 2 ? (Integer.parseInt(args[1])) : 8;
         Maze maze = new Maze(x, y, "recursive-backtracker");

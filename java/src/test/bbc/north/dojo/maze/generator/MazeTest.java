@@ -6,7 +6,7 @@ import org.junit.Test;
 public class MazeTest {
 
     @Test
-    public void canGenerateMaze() throws Exception {
+    public void canGenerateMaze() throws Throwable {
         Maze maze = new Maze(30, 30, "recursive-backtracker");
         maze.display();
     }
