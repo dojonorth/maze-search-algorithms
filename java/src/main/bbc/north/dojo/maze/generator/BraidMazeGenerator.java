@@ -11,37 +11,43 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
     }
 
     @Override
-    public int[][] generateMaze(int cx, int cy) {
+    public int[][] generateMaze(int cx, int cy) throws MazeGenerationFailureException {
         maze = recursiveBacktrack(cx, cy);
         // 1. Create traversal graph
         traversal = populateTraversalGraph(maze, traversal);
 
         // 2.Start at entrance (get the entrance cell)
-        int cx = x - 1,
-            cy = y - 1;
+        int entranceX = x - 1,
+            entranceY = y - 1;
 
-        int current = maze[cx][cy];
+        int current = maze[entranceX][entranceY];
         int entrance = current;
-        DIR next;
 
+        DIR availableDirection;
         List<Intersection> toVisit = new ArrayList<>();
 
         // 3.If there is one option take it
         if (hasOneAvailableRoute(current)) {
             if (current == 14) { // only available is north
-                next = DIR.N;
+                availableDirection = DIR.N;
             } else if (current == 7) { // only available is west
-                next = DIR.W;
+                availableDirection = DIR.W;
+            } else if (current == 11) {
+                availableDirection = DIR.E;
+            } else if (current == 13) {
+                availableDirection = DIR.S;
             }
+
+
         } else if (hasTwoAvailableRoutes(current)) {
             // 4.Else pick an untraversed option
             DIR[] availableDirs = new DIR[]{ DIR.N, DIR.W };
-            next = selectRandomDirection(availableDirs);
+            availableDirection = selectRandomDirection(availableDirs);
             // 5.Reduce the number of options by 1
-            traversal[cx][cy] -= next.bit;
+            traversal[cx][cy] -= availableDirection.bit;
             // 6.Store a reference to this cell in the 'toVisit' queue
             toVisit.add(new Intersection(cx, cy));
-        } else if (isDeadEnd(current)) {
+        } else if (isDeadEnd(current) || isExit(current)) {
             // 8.Are we at a dead end? i.e. there no options?
             // 9a.Yes - Remove a random wall but not a side wall
             // if cy == 0 -- south wall
@@ -49,10 +55,11 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
             // if cy + 1 % maze[0].length == 0 -- east wall
             // if cx + 1 % maze.length == 0 -- north wall
 
-//            int
-            if (cy == 0) {
+            removeRandomAvailableWall(cx, cy);
+            // mark as traversed
+            traversal[cx][cy] = TRAVERSAL.TRAVERSED.bit;
 
-            }
+
         }
 
         // 7.Remove from the 'toVisit' queue
@@ -64,23 +71,6 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         // 10c.Continue from 2.
         // 9c.No get Continue to 2
         return null;
-    }
-
-    private boolean isDeadEnd(int cell) {
-        return cell == TRAVERSAL.DEAD_END.bit;
-    }
-
-    private DIR selectRandomDirection(DIR[] available) {
-        Collections.shuffle(Arrays.asList(available));
-        return available[0];
-    }
-
-    private boolean hasTwoAvailableRoutes(int cell) {
-        return cell == TRAVERSAL.T2.bit;
-    }
-
-    private boolean hasOneAvailableRoute(int cell) {
-        return cell == TRAVERSAL.T1.bit;
     }
 
     private int[][] populateTraversalGraph(int[][] maze, int[][] history) {
@@ -101,16 +91,94 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
                 // 13 (N & E & W)
                 // 14 (S & E & W)
 
-                if (maze[i][j] == 1 || maze[i][j] == 2 || maze[i][j] == 8) {
-                    history[i][j] = TRAVERSAL.T2.bit;
+                if (isExit(i, j)) {
+                    history[i][j] = TRAVERSAL.EXIT.bit;
+                } else if (maze[i][j] == 1 || maze[i][j] == 2 || maze[i][j] == 8) {
+                    history[i][j] = TRAVERSAL.AVAILABLE_2.bit;
                 } else if (maze[i][j] == 3 || maze[i][j] == 5 || maze[i][j] == 6 ||
-                           maze[i][j] == 9 || maze[i][j] == 10 || maze[i][j] == 12) {
-                    history[i][j] = TRAVERSAL.T1.bit;
+                        maze[i][j] == 9 || maze[i][j] == 10 || maze[i][j] == 12) {
+                    history[i][j] = TRAVERSAL.AVAILABLE_1.bit;
                 } else if (maze[i][j] == 7 || maze[i][j] == 11 || maze[i][j] == 13 || maze[i][j] == 14) {
                     history[i][j] = TRAVERSAL.DEAD_END.bit;
                 }
             }
         }
         return history;
+    }
+
+    private void removeRandomAvailableWall(int cx, int cy) throws MazeGenerationFailureException {
+        DIR[] availableWallsToRemove = listAvailableWallsToRemove(cx, cy);
+        Collections.shuffle(Arrays.asList(availableWallsToRemove));
+        DIR wallToRemove = availableWallsToRemove[0];
+        maze[cx][cy] -= wallToRemove.bit;
+    }
+
+    private DIR[] listAvailableWallsToRemove(int cx, int cy) throws MazeGenerationFailureException {
+        DIR[] availableWallsToRemove;
+        if (isAdjacentToSouthWall(cy)) {
+            if (isAdjacentToEastWall(cy)) {
+                availableWallsToRemove = new DIR[] { DIR.N, DIR.W };
+            } else if (isAdjacentToWestWall(cx)) {
+                availableWallsToRemove = new DIR[] { DIR.N, DIR.E };
+            } else {
+                availableWallsToRemove = new DIR[] { DIR.N, DIR.E, DIR.W };
+            }
+        } else if (isAdjacentToNorthWall(cx)) {
+            if (isAdjacentToEastWall(cy)) {
+                availableWallsToRemove = new DIR[] { DIR.W, DIR.S };
+            } else if (isAdjacentToWestWall(cy)) {
+                availableWallsToRemove = new DIR[] { DIR.E, DIR.S };
+            } else {
+                availableWallsToRemove = new DIR[] { DIR.N, DIR.W, DIR.S };
+            }
+        } else if (isAdjacentToEastWall(cx)) {
+            availableWallsToRemove = new DIR[] { DIR.N, DIR.W, DIR.S };
+        } else if (isAdjacentToWestWall(cx)) {
+            availableWallsToRemove = new DIR[] { DIR.N, DIR.E, DIR.S };
+        } else {
+            throw new MazeGenerationFailureException("Failed to generate maze - failed to detect adjacent walls");
+        }
+        return availableWallsToRemove;
+    }
+
+    private DIR selectRandomDirection(DIR[] available) {
+        Collections.shuffle(Arrays.asList(available));
+        return available[0];
+    }
+
+    private boolean hasOneAvailableRoute(int cell) {
+        return cell == TRAVERSAL.AVAILABLE_1.bit;
+    }
+
+    private boolean hasTwoAvailableRoutes(int cell) {
+        return cell == TRAVERSAL.AVAILABLE_2.bit;
+    }
+
+    private boolean isDeadEnd(int cell) {
+        return cell == TRAVERSAL.DEAD_END.bit;
+    }
+
+    private boolean isExit(int cell) {
+        return cell == TRAVERSAL.EXIT.bit;
+    }
+
+    private boolean isExit(int i, int j) {
+        return i == 0 && j == 0;
+    }
+
+    private boolean isAdjacentToNorthWall(int cx) {
+        return cx % (x - 1) == 0;
+    }
+
+    private boolean isAdjacentToWestWall(int cx) {
+        return cx == 0;
+    }
+
+    private boolean isAdjacentToEastWall(int cy) {
+        return cy % (y - 1) == 0;
+    }
+
+    private boolean isAdjacentToSouthWall(int cy) {
+        return cy == 0;
     }
 }

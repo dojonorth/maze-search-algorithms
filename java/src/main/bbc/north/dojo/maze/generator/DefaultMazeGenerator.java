@@ -18,7 +18,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
     }
 
     @Override
-    public int[][] generateMaze(int cx, int cy) {
+    public int[][] generateMaze(int cx, int cy) throws MazeGenerationFailureException {
         return recursiveBacktrack(cx, cy);
     }
 
@@ -32,7 +32,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
                     && (maze[nx][ny] == 0)) {
                 maze[cx][cy] |= dir.bit;
                 maze[nx][ny] |= dir.opposite.bit;
-                generateMaze(nx, ny);
+                recursiveBacktrack(nx, ny);
             }
         }
         return maze;
@@ -66,7 +66,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
     };
 
     public enum TRAVERSAL {
-        T(1), T2(2), T1(4), DEAD_END(8);
+        TRAVERSED(1), AVAILABLE_2(2), AVAILABLE_1(4), DEAD_END(8), EXIT(99);
 
         final int bit;
 
