@@ -1,89 +1,79 @@
 package bbc.north.dojo.maze.generator;
 
+import bbc.north.dojo.maze.InitialTraversal;
 import bbc.north.dojo.maze.Intersection;
+import bbc.north.dojo.maze.Traversal;
 
 import java.util.*;
 
 public class BraidMazeGenerator extends DefaultMazeGenerator {
 
-    DIR availableDirection;
     Map<String, Intersection> toVisit = new LinkedHashMap<>();
+    private int traversalCount;
 
     public BraidMazeGenerator(int x, int y) {
         super(x, y);
     }
 
     @Override
-    public int[][] generateMaze(int cx, int cy) throws MazeGenerationFailureException {
+    public int[][] generateMaze(int cx, int cy) throws Throwable {
+
         maze = recursiveBacktrack(cx, cy);
         // 1. Create traversal graph
-        traversal = populateTraversalGraph(maze, traversal);
+        traversalGraph = populateTraversalGraph(maze, traversalGraph);
 
         // 2.Start at entrance (get the entrance cell)
         int entranceX = x - 1,
             entranceY = y - 1;
 
         int current = maze[entranceX][entranceY];
-        traverse(current, entranceX, entranceY);
+        traversalCount = 0;
+        traverse(new InitialTraversal(current), entranceX, entranceY, traversalCount);
         return maze;
     }
 
-    private void traverse(int current, int cx, int cy) throws MazeGenerationFailureException {
+    private void traverse(Traversal traversal, int cx, int cy, int traversalCount) throws Throwable {
         // Recursive follow Loop probably starts here
         // 3.If there is one option take it
-        int traversalState = traversal[cx][cy];
+        DIR availableDirection;
+        int traversalState = traversalGraph[cx][cy];
+        int current = traversal.current;
         if (hasOneAvailableRoute(traversalState)) {
-            if (current == 14) { // only available is north
-                availableDirection = DIR.N;
-            } else if (current == 7) { // only available is west
-                availableDirection = DIR.W;
-            } else if (current == 11) { // only available is east
-                availableDirection = DIR.E;
-            } else if (current == 13) { // only available is south
-                availableDirection = DIR.S;
-            }
+            availableDirection = DIR.toTraversalDirection(current);
+
             // 7.Remove from the 'toVisit' queue
             String toVisitKey = toVisitKey(cx, cy);
             if (toVisit.containsKey(toVisitKey)) {
                 toVisit.remove(toVisitKey);
             }
-        } else if (hasMoreThanOneAvailableRoute(traversalState)) {
+
+            traverseInNextDirection(cx, cy, traversalCount, availableDirection, current);
+        } else if (hasMoreThanOneAvailableRoute(traversalState) && !isDeadEnd(traversalState) && !traversed(traversalState)) {
             // 4.Else pick an untraversed option
             int blockedDirections = listOfBlockedDirections(cx, cy);
             // available directions is inverse of the
-            int availableDirections = ~blockedDirections;
+            int availableDirections = flipBits(blockedDirections, 4);
 
-            DIR availableDirection = selectRandomDirection(DIR.toArray(availableDirections));
+            availableDirection = selectRandomDirection(DIR.toArray(availableDirections));
 
             // recalculate the traversal value for this route
             // check if available direction has been traversed or not
             if (traversalState == TRAVERSAL.TRAVERSED.state) {
                 // if it has do nothing
-//                if (toVisit.size() != 0) {
-//                    Intersection nextIntersection = toVisit.get(toVisit.size() - 1); // get the last intersection (always work from the back -- more efficient)
-//                    int nx = nextIntersection.x;
-//                    int ny = nextIntersection.y;
-//                    current = maze[nx][ny];
-//                    traverse(current, nx, ny);
-//                }
+                traverseToNextIntersection(traversalCount);
             } else {
                 // Reduce the number of traversal options by 1
                 if (traversalState == TRAVERSAL.AVAILABLE_3.state) {
-                    traversal[cx][cy] = TRAVERSAL.AVAILABLE_2.state;
+                    traversalGraph[cx][cy] = TRAVERSAL.AVAILABLE_2.state;
                 } else if (traversalState == TRAVERSAL.AVAILABLE_2.state) {
-                    traversal[cx][cy] = TRAVERSAL.AVAILABLE_1.state;
+                    traversalGraph[cx][cy] = TRAVERSAL.AVAILABLE_1.state;
                 } else if (traversalState == TRAVERSAL.AVAILABLE_1.state) {
-                    traversal[cx][cy] = TRAVERSAL.TRAVERSED.state;
+                    traversalGraph[cx][cy] = TRAVERSAL.TRAVERSED.state;
                 }
                 // Overwrite the reference to this traversal in 'toVisit' to update the traversal history
                 toVisit.put(toVisitKey(cx, cy), new Intersection(cx, cy));
 
-                // re-traverse by following the next available direction
-                int nx = cx + availableDirection.dx;
-                int ny = cy + availableDirection.dy;
-
-                current = maze[nx][ny];
-                traverse(current, nx, ny);
+                traverseInNextDirection(cx, cy, traversalCount, availableDirection, current);
             }
         } else if (isDeadEnd(current) && !traversed(traversalState)) {
             // 8.Are we at a dead end? i.e. there no options?
@@ -92,27 +82,61 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
             // if cx == 0 -- west wall
             // if cy + 1 % maze[0].length == 0 -- east wall
             // if cx + 1 % maze.length == 0 -- north wall
-
+            System.out.println("Removing dead end");
             maze = removeRandomAvailableWall(cx, cy);
             // mark the dead end as traversed (it's not a dead end any more
-            traversal[cx][cy] = TRAVERSAL.TRAVERSED.state;
+            traversalGraph[cx][cy] = TRAVERSAL.TRAVERSED.state;
 
             // check if there are any previously untraversed intersections
-            if (toVisit.size() != 0) {
-                // if there are
-                Intersection nextIntersection = toVisit.get(toVisit.size() - 1); // get the last intersection (always work from the back -- more efficient)
-                int nx = nextIntersection.x;
-                int ny = nextIntersection.y;
-                current = maze[nx][ny];
-                traverse(current, nx, ny);
-            } else {
-                // if there aren't
-                // we're finished - reached last dead end
-                // return the traversed tree ideally - how though?
-                // each time we move to the next in the path we should store the path in a Tree Map
-                // if the tree reaches a dead end, delete all of the nodes up the tree until we reach a tree node with leafs that has more than one avenue
-            }
+            traverseToNextIntersection(traversalCount);
+//            if (toVisit.size() != 0) {
+//                // if there are
+//                Intersection nextIntersection = toVisit.get(toVisit.size() - 1); // get the last intersection (always work from the back -- more efficient)
+//                int nx = nextIntersection.x;
+//                int ny = nextIntersection.y;
+//
+//                current = maze[nx][ny];
+//                traversalCount = traversalCount + 1;
+//                traverse(new Traversal(current, true), nx, ny, traversalCount);
+//            } else {
+//                // if there aren't
+//                // we're finished - reached last dead end
+//                // return the traversed tree ideally - how though?
+//                // each time we move to the next in the path we should store the path in a Tree Map
+//                // if the tree reaches a dead end, delete all of the nodes up the tree until we reach a tree node with leafs that has more than one avenue
+//            }
         }
+    }
+
+    private void traverseInNextDirection(int cx, int cy, int traversalCount, DIR availableDirection, int current) throws Throwable {
+        if (traversalCount < x * y) {
+            // re-traverse by following the next available direction
+            int nx = cx + availableDirection.dx;
+            int ny = cy + availableDirection.dy;
+
+            DIR directionOfTravel = DIR.toTraversalDirection(current).opposite;
+            current = maze[nx][ny];
+            traversalCount = traversalCount + 1;
+            traverse(new Traversal(current, directionOfTravel), nx, ny, traversalCount);
+        }
+    }
+
+    private void traverseToNextIntersection(int traversalCount) throws Throwable {
+        int current;
+        if (toVisit.size() != 0) {
+            Intersection nextIntersection = toVisit.get(toVisit.size() - 1); // get the last intersection (always work from the back -- more efficient)
+            int nx = nextIntersection.x;
+            int ny = nextIntersection.y;
+
+            current = maze[nx][ny];
+            traversalCount = traversalCount + 1;
+            traverse(new Traversal(current, true), nx, ny, traversalCount);
+        }
+    }
+
+    private int flipBits(int n, int k) {
+        int mask = (1 << k) - 1;
+        return ~n & mask;
     }
 
     private boolean traversed(int traversalState) {
@@ -144,11 +168,11 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
 
                 if (isExit(i, j)) {
                     history[i][j] = TRAVERSAL.EXIT.state;
-                } else if (maze[i][j] == 1 || maze[i][j] == 2 || maze[i][j] == 8) {
-                    history[i][j] = TRAVERSAL.AVAILABLE_2.state;
+                } else if (maze[i][j] == 1 || maze[i][j] == 2 || maze[i][j] == 4 || maze[i][j] == 8) {
+                    history[i][j] = TRAVERSAL.AVAILABLE_1.state;
                 } else if (maze[i][j] == 3 || maze[i][j] == 5 || maze[i][j] == 6 ||
                         maze[i][j] == 9 || maze[i][j] == 10 || maze[i][j] == 12) {
-                    history[i][j] = TRAVERSAL.AVAILABLE_1.state;
+                    history[i][j] = TRAVERSAL.AVAILABLE_2.state;
                 } else if (maze[i][j] == 7 || maze[i][j] == 11 || maze[i][j] == 13 || maze[i][j] == 14) {
                     history[i][j] = TRAVERSAL.DEAD_END.state;
                 }
@@ -233,8 +257,6 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         return available[0];
     }
 
-
-
     private boolean hasOneAvailableRoute(int traversalState) {
         return traversalState == TRAVERSAL.AVAILABLE_1.state;
     }
@@ -244,12 +266,12 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
                 traversalState == TRAVERSAL.AVAILABLE_3.state;
     }
 
-    private boolean isDeadEnd(int cell) {
-        return cell == TRAVERSAL.DEAD_END.state;
+    private boolean isDeadEnd(int traversalState) {
+        return traversalState == TRAVERSAL.DEAD_END.state;
     }
 
-    private boolean isExit(int cell) {
-        return cell == TRAVERSAL.EXIT.state;
+    private boolean isExit(int traversalState) {
+        return traversalState == TRAVERSAL.EXIT.state;
     }
 
     private boolean isExit(int i, int j) {

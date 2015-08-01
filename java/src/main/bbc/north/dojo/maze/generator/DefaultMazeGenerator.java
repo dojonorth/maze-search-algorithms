@@ -8,17 +8,17 @@ public class DefaultMazeGenerator implements MazeGenerator {
     protected final int x;
     protected final int y;
     protected int[][] maze;
-    protected int[][] traversal;
+    protected int[][] traversalGraph;
 
     public DefaultMazeGenerator(int x, int y) {
         this.x = x;
         this.y = y;
         maze = new int[this.x][this.y];
-        traversal = new int[this.x][this.y];
+        traversalGraph = new int[this.x][this.y];
     }
 
     @Override
-    public int[][] generateMaze(int cx, int cy) throws MazeGenerationFailureException {
+    public int[][] generateMaze(int cx, int cy) throws Throwable {
         return recursiveBacktrack(cx, cy);
     }
 
@@ -57,7 +57,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
             W.opposite = E;
         }
 
-        private DIR(int state, int dx, int dy) {
+        DIR(int state, int dx, int dy) {
             this.state = state;
             this.dx = dx;
             this.dy = dy;
@@ -95,6 +95,21 @@ public class DefaultMazeGenerator implements MazeGenerator {
             }
             return new DIR[0];  //To change body of created methods use File | Settings | File Templates.
         }
+
+        public static DIR toTraversalDirection(int direction) throws Exception {
+            if (direction != 1 && direction != 2 && direction != 4 && direction != 8) {
+                throw new Exception("Invalid current state: current[" + direction +"]");
+            }
+            if (direction == 1) { // only available is north
+                return DIR.N;
+            } else if (direction == 2) { // only available is west
+                return DIR.S;
+            } else if (direction == 4) { // only available is east
+                return DIR.E;
+            } else { // only available is south
+                return DIR.W;
+            }
+        }
     };
 
     public enum TRAVERSAL {
@@ -102,7 +117,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
 
         final int state;
 
-        private TRAVERSAL(int bit) {
+        TRAVERSAL(int bit) {
             this.state = bit;
         }
     };

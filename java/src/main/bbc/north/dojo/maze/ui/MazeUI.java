@@ -47,7 +47,6 @@ public class MazeUI extends Application {
     public static final int CELL_LENGTH = 20;
     public static final int GAP = 5;
 
-    final static String DEFAULT_MAZE_TYPE = "Recursive BackTracker (Default)";
     final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
 
     private Maze maze;
@@ -56,11 +55,11 @@ public class MazeUI extends Application {
     private Integer colX = 5;
 
     final Label dimensionsLabel = new Label("Dimensions");
-    final Label heightLabel = new Label("Height:");
+//    final Label heightLabel = new Label("Height:");
     final TextField dimensionsTextField = new TextField();
 
-    final Label widthLabel = new Label("Width:");
-    final TextField widthTextField = new TextField();
+//    final Label widthLabel = new Label("Width:");
+//    final TextField widthTextField = new TextField();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -70,7 +69,7 @@ public class MazeUI extends Application {
 
         try {
             drawMazeView(root);
-        } catch (MazeGenerationFailureException e) {
+        } catch (Throwable e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
 
@@ -103,7 +102,7 @@ public class MazeUI extends Application {
         gc.setEffect(null);
     }
 
-    private void drawMazeView(Group root) throws MazeGenerationFailureException {
+    private void drawMazeView(Group root) throws Throwable {
         Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
@@ -145,44 +144,43 @@ public class MazeUI extends Application {
             root.getChildren().remove(pathGroup);
             setBoxBlur(gc);
 
-            if (!"".equals(dimensionsTextField.getText())) {
-
-                if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
+            if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
+                if (!"".equals(dimensionsTextField.getText())) {
+                    dimensions = Integer.valueOf(dimensionsTextField.getText());
 //                        colX = Integer.valueOf(widthTextField.getText());
-                        dimensions = Integer.valueOf(dimensionsTextField.getText());
                     try {
                         maze = new Maze(dimensions, mazeGenComboBox.getValue().toString());
-                    } catch (MazeGenerationFailureException e) {
+                    } catch (Throwable e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
-                    maze = new Maze(Maze.mazeProblemOne);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
-                    maze = new Maze(Maze.mazeProblemTwo);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
-                    maze = new Maze(Maze.mazeProblemThree);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
-                    maze = new Maze(Maze.mazeProblemFour);
-                } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
-                    maze = new Maze(Maze.mazeProblemFive);
                 }
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
+                maze = new Maze(Maze.mazeProblemOne);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
+                maze = new Maze(Maze.mazeProblemTwo);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
+                maze = new Maze(Maze.mazeProblemThree);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
+                maze = new Maze(Maze.mazeProblemFour);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
+                maze = new Maze(Maze.mazeProblemFive);
+            }
 
-                drawMaze(gc);
+            drawMaze(gc);
 
-                Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
-                root.getChildren().add(entranceMarker);
-                Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
-                root.getChildren().add(exitMarker);
+            Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
+            root.getChildren().add(entranceMarker);
+            Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
+            root.getChildren().add(exitMarker);
 
-                List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
 //                path.add(entranceMarker);
 //                path.add(exitMarker);
 
-                animateRoute(path);
+            animateRoute(path);
 
-                pathGroup.getChildren().addAll(path);
-                root.getChildren().add(pathGroup);
-            }
+            pathGroup.getChildren().addAll(path);
+            root.getChildren().add(pathGroup);
         });
 
         grid.add(btn, 0, 4);
@@ -203,10 +201,10 @@ public class MazeUI extends Application {
     }
 
     private ComboBox addMazeGeneratorComboBox() {
-        ObservableList<String> mazeGenerationTypes = FXCollections.observableArrayList(DEFAULT_MAZE_TYPE);
+        ObservableList<String> mazeGenerationTypes = FXCollections.observableArrayList(Maze.DEFAULT_MAZE_TYPE, Maze.BRAID_MAZE_TYPE);
 
         final ComboBox mazeGenComboBox = new ComboBox(mazeGenerationTypes);
-        mazeGenComboBox.setValue(DEFAULT_MAZE_TYPE);
+        mazeGenComboBox.setValue(Maze.DEFAULT_MAZE_TYPE);
         return mazeGenComboBox;
     }
 
