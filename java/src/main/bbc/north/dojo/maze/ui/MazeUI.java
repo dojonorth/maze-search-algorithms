@@ -9,8 +9,6 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -54,12 +52,12 @@ public class MazeUI extends Application {
 
     private Maze maze;
     private Group pathGroup = new Group();
-    private Integer colY = 5;
+    private Integer dimensions = 5;
     private Integer colX = 5;
 
     final Label dimensionsLabel = new Label("Dimensions");
     final Label heightLabel = new Label("Height:");
-    final TextField heightTextField = new TextField();
+    final TextField dimensionsTextField = new TextField();
 
     final Label widthLabel = new Label("Width:");
     final TextField widthTextField = new TextField();
@@ -121,10 +119,10 @@ public class MazeUI extends Application {
         grid.getColumnConstraints().add(labelConstraints);
 
         grid.add(dimensionsLabel, 0, 0);
-        grid.add(heightLabel, 0, 1);
-        grid.add(widthLabel, 0, 2);
-        grid.add(heightTextField, 1, 1);
-        grid.add(widthTextField, 1, 2);
+//        grid.add(heightLabel, 0, 1);
+//        grid.add(widthLabel, 0, 2);
+        grid.add(dimensionsTextField, 0, 1);
+//        grid.add(widthTextField, 1, 2);
 
         final ComboBox mazeGenComboBox = addMazeGeneratorComboBox();
         final ComboBox<String> preGenComboBox = addPreGeneratedMazeTypes();
@@ -147,14 +145,13 @@ public class MazeUI extends Application {
             root.getChildren().remove(pathGroup);
             setBoxBlur(gc);
 
-            if (!"".equals(heightTextField.getText()) &&
-                !"".equals(widthTextField.getText())) {
+            if (!"".equals(dimensionsTextField.getText())) {
 
                 if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
-                        colY = Integer.valueOf(heightTextField.getText());
-                        colX = Integer.valueOf(widthTextField.getText());
+//                        colX = Integer.valueOf(widthTextField.getText());
+                        dimensions = Integer.valueOf(dimensionsTextField.getText());
                     try {
-                        maze = new Maze(colY, colX, "recursive-backtracker");
+                        maze = new Maze(dimensions, mazeGenComboBox.getValue().toString());
                     } catch (MazeGenerationFailureException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
@@ -216,14 +213,14 @@ public class MazeUI extends Application {
     void drawMaze(GraphicsContext gc) {
         int[][] maze = this.maze.representation();
         colX = this.maze.getX();
-        colY = this.maze.getY();
+        dimensions = this.maze.getY();
 
         int xPos, yPos = 20;
 
         for (int i = 0; i < colX; i++) {
             xPos = 20;
             // draw the north edge
-            for (int j = 0; j < colY; j++) {
+            for (int j = 0; j < dimensions; j++) {
                 if ((maze[j][i] & 1) == 0) {
                     gc.strokeLine(xPos, yPos, xPos + CELL_LENGTH, yPos); // horizontal
                 }
@@ -232,7 +229,7 @@ public class MazeUI extends Application {
 
             xPos = 20;
             // draw the west edge
-            for (int j = 0; j < colY; j++) {
+            for (int j = 0; j < dimensions; j++) {
                 if ((maze[j][i] & 8) == 0) {
                     gc.strokeLine(xPos, yPos, xPos, yPos + CELL_LENGTH); // vertical
                 }
@@ -246,7 +243,7 @@ public class MazeUI extends Application {
 
         xPos = 20; // reset x pos to western edge
 
-        for (int j = 0; j < colY; j++) {
+        for (int j = 0; j < dimensions; j++) {
             gc.strokeLine(xPos, yPos, xPos + CELL_LENGTH, yPos); // horizontal
             xPos += CELL_LENGTH + GAP;
         }
@@ -331,7 +328,7 @@ public class MazeUI extends Application {
     }
 
     private int calculateYOffsetForEntrance() {
-        return (colY - 1) * (CELL_LENGTH + GAP);
+        return (dimensions - 1) * (CELL_LENGTH + GAP);
     }
 
     public static void main(String[] args) {
