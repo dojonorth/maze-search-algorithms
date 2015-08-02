@@ -46,8 +46,8 @@ public class DefaultMazeGenerator implements MazeGenerator {
         N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
 
         final int state;
-        final int dx;
-        final int dy;
+        public final int dx;
+        public final int dy;
         DIR opposite;
         // use the static initializer to resolve forward references
         static {
@@ -119,6 +119,18 @@ public class DefaultMazeGenerator implements MazeGenerator {
 
         TRAVERSAL(int bit) {
             this.state = bit;
+        }
+
+        public static int oneLess(int traversal) {
+            TRAVERSAL traversalEnum;
+            if (traversal == 8) {
+                traversalEnum = AVAILABLE_2;
+            } else if (traversal == 4) {
+                traversalEnum = AVAILABLE_1;
+            } else {
+                traversalEnum = TRAVERSED;
+            }
+            return traversalEnum.state;
         }
     };
 }

@@ -28,16 +28,19 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
 
         int current = maze[entranceX][entranceY];
         traversalCount = 0;
-        traverse(new InitialTraversal(current), entranceX, entranceY, traversalCount);
+        traverse(new InitialTraversal(current, entranceX, entranceY), traversalCount);
         return maze;
     }
 
-    private void traverse(Traversal traversal, int cx, int cy, int traversalCount) throws Throwable {
+    private void traverse(Traversal traversal, int traversalCount) throws Throwable {
         // Recursive follow Loop probably starts here
         // 3.If there is one option take it
         DIR availableDirection;
-        int traversalState = traversalGraph[cx][cy];
-        int current = traversal.current;
+        int cx = traversal.toX(),
+            cy = traversal.toY();
+
+        int traversalState = traversalGraph[traversal.toX()][traversal.toY()];
+        int current = traversal.state;
         if (hasOneAvailableRoute(traversalState)) {
             availableDirection = DIR.toTraversalDirection(current);
 
@@ -47,14 +50,16 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
                 toVisit.remove(toVisitKey);
             }
 
+            // correct the traversal graph to remove one of the traversals
+            // since we just traversed it
+
             traverseInNextDirection(cx, cy, traversalCount, availableDirection, current);
-        } else if (hasMoreThanOneAvailableRoute(traversalState) && !isDeadEnd(traversalState) && !traversed(traversalState)) {
-            // 4.Else pick an untraversed option
-            int blockedDirections = listOfBlockedDirections(cx, cy);
-            // available directions is inverse of the
-            int availableDirections = flipBits(blockedDirections, 4);
+        } else if (hasMoreThanOneAvailableRoute(traversalState)) {
+            int availableDirections = listOfAvailableDirections(cx, cy);
 
             availableDirection = selectRandomDirection(DIR.toArray(availableDirections));
+
+            traversalState = traversal.state;
 
             // recalculate the traversal value for this route
             // check if available direction has been traversed or not
@@ -62,20 +67,15 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
                 // if it has do nothing
                 traverseToNextIntersection(traversalCount);
             } else {
+
                 // Reduce the number of traversal options by 1
-                if (traversalState == TRAVERSAL.AVAILABLE_3.state) {
-                    traversalGraph[cx][cy] = TRAVERSAL.AVAILABLE_2.state;
-                } else if (traversalState == TRAVERSAL.AVAILABLE_2.state) {
-                    traversalGraph[cx][cy] = TRAVERSAL.AVAILABLE_1.state;
-                } else if (traversalState == TRAVERSAL.AVAILABLE_1.state) {
-                    traversalGraph[cx][cy] = TRAVERSAL.TRAVERSED.state;
-                }
+
                 // Overwrite the reference to this traversal in 'toVisit' to update the traversal history
                 toVisit.put(toVisitKey(cx, cy), new Intersection(cx, cy));
 
                 traverseInNextDirection(cx, cy, traversalCount, availableDirection, current);
             }
-        } else if (isDeadEnd(current) && !traversed(traversalState)) {
+        } else if (isDeadEnd(current) || traversed(traversalState)) {
             // 8.Are we at a dead end? i.e. there no options?
             // 9a.Yes - Remove a random wall but not a side wall
             // if cy == 0 -- south wall
@@ -105,32 +105,34 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
 //                // each time we move to the next in the path we should store the path in a Tree Map
 //                // if the tree reaches a dead end, delete all of the nodes up the tree until we reach a tree node with leafs that has more than one avenue
 //            }
+        } else {
+            traverseToNextIntersection(traversalCount);
         }
     }
 
     private void traverseInNextDirection(int cx, int cy, int traversalCount, DIR availableDirection, int current) throws Throwable {
+        traversalGraph[cx][cy] = TRAVERSAL.oneLess(traversalGraph[cx][cy]);
         if (traversalCount < x * y) {
             // re-traverse by following the next available direction
             int nx = cx + availableDirection.dx;
             int ny = cy + availableDirection.dy;
 
-            DIR directionOfTravel = DIR.toTraversalDirection(current).opposite;
             current = maze[nx][ny];
             traversalCount = traversalCount + 1;
-            traverse(new Traversal(current, directionOfTravel), nx, ny, traversalCount);
+            traverse(new Traversal(current, availableDirection, cx, cy), traversalCount);
         }
     }
 
     private void traverseToNextIntersection(int traversalCount) throws Throwable {
         int current;
-        if (toVisit.size() != 0) {
+        if (toVisit.size() > 0) {
             Intersection nextIntersection = toVisit.get(toVisit.size() - 1); // get the last intersection (always work from the back -- more efficient)
             int nx = nextIntersection.x;
             int ny = nextIntersection.y;
 
             current = maze[nx][ny];
             traversalCount = traversalCount + 1;
-            traverse(new Traversal(current, true), nx, ny, traversalCount);
+            traverse(new Traversal(current, true, nextIntersection.x, nextIntersection.y),  traversalCount);
         }
     }
 
@@ -224,20 +226,20 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
      * @return
      * @throws MazeGenerationFailureException
      */
-    private int listOfBlockedDirections(int cx, int cy) throws MazeGenerationFailureException {
+    private int listOfAvailableDirections(int cx, int cy) throws MazeGenerationFailureException {
         int directions;
         if (isAdjacentToSouthWall(cy)) {
-            if (isAdjacentToEastWall(cy)) {
+            if (isAdjacentToEastWall(cx)) {
                 directions = 9;
             } else if (isAdjacentToWestWall(cx)) {
                 directions = 5;
             } else {
                 directions = 13;
             }
-        } else if (isAdjacentToNorthWall(cx)) {
-            if (isAdjacentToEastWall(cy)) {
+        } else if (isAdjacentToNorthWall(cy)) {
+            if (isAdjacentToEastWall(cx)) {
                 directions = 8;
-            } else if (isAdjacentToWestWall(cy)) {
+            } else if (isAdjacentToWestWall(cx)) {
                 directions = 6;
             } else {
                 directions = 14;
@@ -278,19 +280,19 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         return i == 0 && j == 0;
     }
 
-    private boolean isAdjacentToNorthWall(int cx) {
-        return cx % (x - 1) == 0;
+    private boolean isAdjacentToNorthWall(int cy) {
+        return cy == 0;
     }
 
     private boolean isAdjacentToWestWall(int cx) {
         return cx == 0;
     }
 
-    private boolean isAdjacentToEastWall(int cy) {
-        return cy % (y - 1) == 0;
+    private boolean isAdjacentToEastWall(int cx) {
+        return (cx + 1) % x == 0;
     }
 
     private boolean isAdjacentToSouthWall(int cy) {
-        return cy == 0;
+        return (cy + 1) % y == 0;
     }
 }
