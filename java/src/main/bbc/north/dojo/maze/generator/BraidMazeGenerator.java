@@ -87,11 +87,7 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
                 // if it has do nothing
                 traverseToNextIntersection(traversalCount);
             } else {
-
-                // Reduce the number of traversal options by 1
-
-                if (hasThreeAvailableRoutes(availableTraversals)) {
-                    // Overwrite the reference to this traversal in 'toVisit' to update the traversal history
+                if (!toVisit.containsKey(toVisitKey(cx,cy))) {
                     toVisit.put(toVisitKey(cx, cy), new Intersection(cx, cy));
                 }
 
@@ -129,9 +125,10 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
     private void traverseToNextIntersection(int traversalCount) throws Throwable {
         int current;
         if (toVisit.size() > 0) {
-            Intersection nextIntersection = toVisit.get(toVisit.size() - 1); // get the last intersection (always work from the back -- more efficient)
-            int nx = nextIntersection.x;
-            int ny = nextIntersection.y;
+            Intersection nextIntersection = toVisit.get(toVisit.keySet().iterator().next()); // get the last intersection (always work from the back -- more efficient)
+            int nx = 0, ny = 0;
+            nx = nextIntersection.x;
+            ny = nextIntersection.y;
 
             current = maze[nx][ny];
             traversalCount = traversalCount + 1;
