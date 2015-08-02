@@ -23,4 +23,26 @@ public class MazeViewer {
         }
         System.out.println("+");
     }
+
+    public static String display(int[][] maze) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < maze[0].length; i++) {
+            // draw the bbc.north edge
+            for (int j = 0; j < maze.length; j++) {
+                buf.append((maze[j][i] & 1) == 0 ? "+---" : "+   ");
+            }
+            buf.append("+\n");
+            // draw the west edge
+            for (int j = 0; j < maze.length; j++) {
+                buf.append((maze[j][i] & 8) == 0 ? "|   " : "    ");
+            }
+            buf.append("|\n");
+        }
+        // draw the bottom line
+        for (int j = 0; j < maze.length; j++) {
+            buf.append("+---");
+        }
+        buf.append("+\n");
+        return buf.toString();
+    }
 }
