@@ -4,6 +4,7 @@
     <title>Amazing</title>
     <script>
       var mazeUi;
+      var mazeObj;
 
       function drawMaze() {
 
@@ -14,7 +15,7 @@
         if (!y) { y = 10 };
 
         if (x <= 100 && y <= 100) {
-          var mazeObj = require('./lib/generator/maze')(x, y);
+          mazeObj = require('./lib/generator/maze')(x, y);
           mazeUi = require('./lib/ui/ui')(document, "maze", mazeObj);
 
           mazeUi.clear();
@@ -27,7 +28,7 @@
       function precannedMaze() {
         var e = document.getElementById("precanned-mazes");
         var maze = e.options[e.selectedIndex].text;
-        var mazeObj = require('./lib/generator/precanned-maze')(maze);
+        mazeObj = require('./lib/generator/precanned-maze')(maze);
         mazeUi = require('./lib/ui/ui')(document, "maze", mazeObj);
 
         mazeUi.clear();
@@ -35,7 +36,7 @@
       }
 
       function drawSolution() {
-        mazeUi.drawSolution();
+        mazeUi.drawSolution(require('./lib/solution.js')(mazeObj));
       }
 
     </script>

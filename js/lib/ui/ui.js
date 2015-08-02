@@ -45,30 +45,24 @@ module.exports = function(doc, elemId, maze) {
     },
 
     drawSolution: function(path) {
-      // N: 1
-      // S: 2
-      // E: 4
-      // W: 8
-      // Example solution path for precannedMaze1
-      // path = [2,2,2,2,2,2,2,2,2,2,2,4,4,2,2,8,2,4,4,1,4,4,1,8,1,8,1,4,4,4,2,2,2,2,4,4,1,1,4,4,4,4,4,4,2,2];
-      var currentX = 0;
-      var currentY = 0;
-      self.ctx.fillRect(currentX, currentY, self.cellWidth, self.cellHeight);
-      var i = 0;
+      if (path.length > 0) {
+        var currentX = 0;
+        var currentY = 0;
+        self.ctx.fillRect(currentX, currentY, self.cellWidth, self.cellHeight);
+        var i = 0;
+        function draw() {
+            var dir = path[i];
+            currentX = currentX + calculateNextPosX(dir);
+            currentY = currentY + calculateNextPosY(dir);
+            self.ctx.fillRect(_.clone(currentX), _.clone(currentY), self.cellWidth, self.cellHeight);
+            i++;
+            if (i < path.length) {
+              window.requestAnimationFrame(draw)
+            }     
+        }
 
-      function draw() {
-          var dir = path[i];
-          currentX = currentX + calculateNextPosX(dir);
-          currentY = currentY + calculateNextPosY(dir);
-          self.ctx.fillRect(_.clone(currentX), _.clone(currentY), self.cellWidth, self.cellHeight);
-          i++;
-          if (i < path.length) {
-            window.requestAnimationFrame(draw)
-          }     
+        window.requestAnimationFrame(draw) 
       }
-
-      window.requestAnimationFrame(draw)
-
     },
 
     drawMaze: function() {
