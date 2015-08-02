@@ -1,5 +1,7 @@
 package bbc.north.dojo.maze.generator;
 
+import bbc.north.dojo.maze.TraversalGraph;
+
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -8,13 +10,13 @@ public class DefaultMazeGenerator implements MazeGenerator {
     protected final int x;
     protected final int y;
     protected int[][] maze;
-    protected int[][] traversalGraph;
+    protected TraversalGraph traversalGraph;
 
     public DefaultMazeGenerator(int x, int y) {
         this.x = x;
         this.y = y;
         maze = new int[this.x][this.y];
-        traversalGraph = new int[this.x][this.y];
+        traversalGraph = new TraversalGraph(maze);
     }
 
     @Override
@@ -44,11 +46,10 @@ public class DefaultMazeGenerator implements MazeGenerator {
 
     public enum DIR {
         N(1, 0, -1), S(2, 0, 1), E(4, 1, 0), W(8, -1, 0);
-
-        final int state;
+        public final int state;
         public final int dx;
         public final int dy;
-        DIR opposite;
+        public DIR opposite;
         // use the static initializer to resolve forward references
         static {
             N.opposite = S;
@@ -110,27 +111,15 @@ public class DefaultMazeGenerator implements MazeGenerator {
                 return DIR.W;
             }
         }
-    };
+    }
 
     public enum TRAVERSAL {
         TRAVERSED(1), AVAILABLE_1(2), AVAILABLE_2(4), AVAILABLE_3(8), DEAD_END(16), EXIT(32);
 
-        final int state;
+        public final int state;
 
         TRAVERSAL(int bit) {
             this.state = bit;
         }
-
-        public static int oneLess(int traversal) {
-            TRAVERSAL traversalEnum;
-            if (traversal == 8) {
-                traversalEnum = AVAILABLE_2;
-            } else if (traversal == 4) {
-                traversalEnum = AVAILABLE_1;
-            } else {
-                traversalEnum = TRAVERSED;
-            }
-            return traversalEnum.state;
-        }
-    };
+    }
 }

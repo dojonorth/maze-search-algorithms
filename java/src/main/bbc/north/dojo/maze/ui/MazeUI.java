@@ -1,7 +1,6 @@
 package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.Maze;
-import bbc.north.dojo.maze.generator.MazeGenerationFailureException;
 import bbc.north.dojo.maze.viewer.MazeViewer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
