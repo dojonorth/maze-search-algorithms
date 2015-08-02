@@ -4,3 +4,5 @@ out
 .idea
 java/target
 js/node_modules
+.DS_Store
+*.log
