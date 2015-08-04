@@ -154,15 +154,15 @@ public class MazeUI extends Application {
                     }
                 }
             } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
-                maze = new Maze(Maze.mazeProblemOne);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_ONE);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
-                maze = new Maze(Maze.mazeProblemTwo);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_TWO);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
-                maze = new Maze(Maze.mazeProblemThree);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_THREE);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
-                maze = new Maze(Maze.mazeProblemFour);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_FOUR);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
-                maze = new Maze(Maze.mazeProblemFive);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_FIVE);
             }
 
             drawMaze(gc);

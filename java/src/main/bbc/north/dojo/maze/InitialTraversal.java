@@ -5,6 +5,6 @@ package bbc.north.dojo.maze;
  */
 public class InitialTraversal extends Traversal {
     public InitialTraversal(int current, int cx, int cy) {
-        super(current, false, cx, cy);
+        super(current, cx, cy);
     }
 }
