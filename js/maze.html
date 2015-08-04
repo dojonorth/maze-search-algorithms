@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Amazing</title>
+    <script>
+      var mazeUi;
+      var mazeObj;
+
+      function drawMaze() {
+
+        var x = parseInt(document.getElementById("width").value);
+        var y = parseInt(document.getElementById("height").value);
+
+        if (!x) { x = 10 };
+        if (!y) { y = 10 };
+
+        if (x <= 100 && y <= 100) {
+          mazeObj = require('./lib/generator/maze')(x, y);
+          mazeUi = require('./lib/ui/ui')(document, "maze", mazeObj);
+
+          mazeUi.clear();
+          mazeUi.draw();
+        } else {
+          console.log('Sorry, the app won\'t handle values of x or y greater than 100');
+        }
+      }
+
+      function precannedMaze() {
+        var e = document.getElementById("precanned-mazes");
+        var maze = e.options[e.selectedIndex].text;
+        mazeObj = require('./lib/generator/precanned-maze')(maze);
+        mazeUi = require('./lib/ui/ui')(document, "maze", mazeObj);
+
+        mazeUi.clear();
+        mazeUi.draw();
+      }
+
+      function drawSolution() {
+        mazeUi.drawSolution(require('./lib/solution.js')(mazeObj));
+      }
+
+    </script>
+    <link rel="stylesheet" href="base.css">
+  </head>
+  <body>
+    <div class="maze-dimensions-container">
+      <label>Height:</label><input type="text" id="height" value="10" />
+      <label>Width:</label><input type="text" id="width" value="10" />
+      <input id="generate" type="button" value="Generate Maze" onclick="drawMaze();" />
+    </div>
+    <div class="precanned-maze-container">
+      <label>Load precanned maze:</label>
+      <select id="precanned-mazes" onchange="precannedMaze();">
+        <option value="mazeProblemOne">mazeProblemOne</option>
+        <option value="mazeProblemTwo">mazeProblemTwo</option>
+        <option value="mazeProblemThree">mazeProblemThree</option>
+        <option value="mazeProblemFour">mazeProblemFour</option>
+        <option value="mazeProblemFive">mazeProblemFive</option>
+      </select>
+      <input id="generate" type="button" value="Solve Maze" onclick="drawSolution();" />
+    </div>
+    <canvas id="maze" width="600" height="600"></canvas>
+    <script>
+      document.getElementById("precanned-mazes").selectedIndex = -1;
+    </script>
+  </body>
+</html>

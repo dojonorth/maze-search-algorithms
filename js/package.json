@@ -3,9 +3,18 @@
   "description": "Maze search algorithms dojo",
   "version": "1.0.0",
   "release": "1",
-  "scripts": {},
-  "dependencies": {
-    "lodash": "^3.10.0"
+  "scripts": {
+    "start": "node_modules/nw/bin/nw ."
   },
-  "devDependencies": {}
+  "dependencies": {
+    "lodash": "^3.10.0",
+    "nw": "^0.12.3"
+  },
+  "devDependencies": {},
+  "main": "maze.html",
+  "window": {
+    "width": 670,
+    "height": 710,
+    "toolbar": false
+  }
 }

@@ -1,0 +1,25 @@
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
+label {
+  margin-right: 5px;
+}
+
+.maze-dimensions-container { 
+  margin: 20px auto; 
+  display: block; 
+  width: 465px;
+}
+
+.precanned-maze-container { 
+  margin: 20px auto; 
+  display: block; 
+  width: 465px;
+}
+
+#maze { 
+  margin: auto auto; 
+  display: block;
+}
