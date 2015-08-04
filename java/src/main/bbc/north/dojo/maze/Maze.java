@@ -1,6 +1,5 @@
 package bbc.north.dojo.maze;
 
-import bbc.north.dojo.maze.generator.MazeGenerationFailureException;
 import bbc.north.dojo.maze.generator.MazeGenerator;
 import bbc.north.dojo.maze.generator.MazeGeneratorFactory;
 import bbc.north.dojo.maze.viewer.MazeViewer;
