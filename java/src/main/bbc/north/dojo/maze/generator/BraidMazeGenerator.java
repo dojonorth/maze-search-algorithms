@@ -46,7 +46,8 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
 
         int current = maze[entranceX][entranceY];
         traversalCount = 0;
-        return traverse(new InitialTraversal(current, entranceX, entranceY), traversalCount);
+        int[][] braidMaze = traverse(new InitialTraversal(current, entranceX, entranceY), traversalCount);
+        return braidMaze;
     }
 
     private int[][] traverse(Traversal traversal, int traversalCount) throws Throwable {
@@ -111,7 +112,7 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
     private void traverseInNextDirection(int cx, int cy, int traversalCount, DIR availableDirection, int availableTraversals) throws Throwable {
         traversalGraph.oneLessTraversal(cx, cy, availableDirection);
 
-            if (traversalCount <= x * y) {
+        if (traversalCount <= x * y) {
             // re-traverse by following the next available direction
             int nx = cx + availableDirection.dx;
             int ny = cy + availableDirection.dy;

@@ -39,6 +39,9 @@ public class MazeUI extends Application {
     public static final String MAZE_THREE = "Maze 3 (Backtrack)";
     public static final String MAZE_FOUR = "Maze 4 (Backtrack)";
     public static final String MAZE_FIVE = "Maze 5 (Backtrack)";
+    public static final String MAZE_SIX = "Maze 6 (Braid)";
+    public static final String MAZE_SEVEN = "Maze 7 (Braid)";
+    public static final String MAZE_EIGHT = "Maze 8 (Braid)";
 
     public static final DIR[] MAZE_ONE_ROUTE =
             new DIR[]{ DIR.N, DIR.N, DIR.N, DIR.W, DIR.N };
@@ -54,11 +57,7 @@ public class MazeUI extends Application {
     private Integer colX = 5;
 
     final Label dimensionsLabel = new Label("Dimensions");
-//    final Label heightLabel = new Label("Height:");
     final TextField dimensionsTextField = new TextField();
-
-//    final Label widthLabel = new Label("Width:");
-//    final TextField widthTextField = new TextField();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -117,10 +116,7 @@ public class MazeUI extends Application {
         grid.getColumnConstraints().add(labelConstraints);
 
         grid.add(dimensionsLabel, 0, 0);
-//        grid.add(heightLabel, 0, 1);
-//        grid.add(widthLabel, 0, 2);
         grid.add(dimensionsTextField, 0, 1);
-//        grid.add(widthTextField, 1, 2);
 
         final ComboBox mazeGenComboBox = addMazeGeneratorComboBox();
         final ComboBox<String> preGenComboBox = addPreGeneratedMazeTypes();
@@ -163,6 +159,12 @@ public class MazeUI extends Application {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_FOUR);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_FIVE);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_SIX)) {
+                maze = new Maze(Maze.BRAID_MAZE_PROBLEM_ONE);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_SEVEN)) {
+                maze = new Maze(Maze.BRAID_MAZE_PROBLEM_TWO);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_EIGHT)) {
+                maze = new Maze(Maze.BRAID_MAZE_PROBLEM_THREE);
             }
 
             drawMaze(gc);
@@ -191,7 +193,8 @@ public class MazeUI extends Application {
 
         ObservableList<String> preGeneratedMazes = FXCollections.observableArrayList(
                 DEFAULT_PRE_GEN_MAZE_TYPE,
-                MAZE_ONE, MAZE_TWO, MAZE_THREE, MAZE_FOUR, MAZE_FIVE
+                MAZE_ONE, MAZE_TWO, MAZE_THREE, MAZE_FOUR, MAZE_FIVE,
+                MAZE_SIX, MAZE_SEVEN, MAZE_EIGHT
         );
 
         final ComboBox<String> preGenComboBox = new ComboBox(preGeneratedMazes);
