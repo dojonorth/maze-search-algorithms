@@ -4,10 +4,13 @@ import bbc.north.dojo.maze.Maze;
 import bbc.north.dojo.maze.Path;
 import bbc.north.dojo.maze.solver.MazeSolver;
 import bbc.north.dojo.maze.viewer.MazeViewer;
+import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -178,12 +181,6 @@ public class MazeUI extends Application {
             }
 
             drawMaze(gc);
-
-//            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-//
-//            animateRoute(path);
-
-//            pathGroup.getChildren().addAll(path);
             root.getChildren().add(pathGroup);
         });
 
@@ -197,9 +194,7 @@ public class MazeUI extends Application {
             List<Path> solution;
             try {
                 solution = solver.solve();
-                List<Circle> path = generatePath(solution, entranceMarker);
-                animateRoute(path);
-                pathGroup.getChildren().addAll(path);
+                animateRoute(solution, entranceMarker, gc);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -286,26 +281,53 @@ public class MazeUI extends Application {
         return path;
     }
 
-    void animateRoute(List<Circle> path) {
+    void animateRoute(List<Path> path, Circle entranceMarker, GraphicsContext gc) {
+        double entranceX = entranceMarker.getCenterX();
+        double entranceY = entranceMarker.getCenterY();
 
         int currentKeyFrameTimeInMs = 0,
             keyframeTimeInMs = 100;
         Timeline timeline = new Timeline();
-        List<KeyFrame> keyFrames = new ArrayList<>();
-        for (int i = 0; i < path.size(); i++) {  // we've already rendered first entry
 
-            Circle pathEntry = path.get(i);
+        List<KeyFrame> keyFrames = new ArrayList<>();
+        List<AnimationTimer> timers = new ArrayList<>();
+
+        for (int i = 0; i < path.size(); i++) {
+            Path pathEntry = path.get(i);
+            DoubleProperty opacity = new SimpleDoubleProperty();
+//            Circle pathEntry = path.get(i);
             // animate Opacity 0% to 100% for each circle
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs),
-                    new KeyValue(pathEntry.opacityProperty(), 0)));
+                    new KeyValue(opacity, 0)));
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs + keyframeTimeInMs),
-                    new KeyValue(pathEntry.opacityProperty(), 10)));
+                    new KeyValue(opacity, 1)));
+
+            timeline.setAutoReverse(true);
+            timeline.setCycleCount(1);
 
             currentKeyFrameTimeInMs += keyframeTimeInMs;
+
+            timers.add(new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    gc.setFill(Color.FORESTGREEN.deriveColor(0, 1, 1, opacity.get()));
+                    gc.fillOval(
+                            entranceX + calculateNextPosX(pathEntry.x) - 18,
+                            entranceY + calculateNextPosY(pathEntry.y) - 173,
+                            8,
+                            8
+                    );
+                }
+            });
         }
+
         timeline.getKeyFrames().addAll(keyFrames);
+
+        for (int i = 0; i < path.size(); i++) {
+            timers.get(i).start();
+        }
         timeline.play();
     }
 

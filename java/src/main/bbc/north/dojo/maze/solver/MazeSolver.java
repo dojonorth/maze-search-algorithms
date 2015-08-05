@@ -96,6 +96,7 @@ public class MazeSolver {
             }
             traverseToNextIntersection(traversalCount);
         } else if (isExit(cx, cy)) {
+            toVisit.clear();
             solution.add(new Path(cx,cy));
         }
         return maze;
