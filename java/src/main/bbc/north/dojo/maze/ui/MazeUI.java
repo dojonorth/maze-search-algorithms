@@ -61,6 +61,7 @@ public class MazeUI extends Application {
     final TextField dimensionsTextField = new TextField();
     final Label efficiencyLabel = new Label();
 
+    Timeline timeline = new Timeline();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -141,11 +142,15 @@ public class MazeUI extends Application {
 
             removeBoxBlur(gc);
             // clear old maze
+
+            root.getChildren().remove(exitMarker);
+
+            timeline.stop();
+            timeline.getKeyFrames().clear();
+
             gc.clearRect(0, 0,
                     canvas.getHeight(),
                     canvas.getWidth());
-
-            root.getChildren().remove(exitMarker);
             setBoxBlur(gc);
 
             if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
@@ -269,7 +274,6 @@ public class MazeUI extends Application {
 
         int currentKeyFrameTimeInMs = 0,
             keyframeTimeInMs = 100;
-        Timeline timeline = new Timeline();
 
         List<KeyFrame> keyFrames = new ArrayList<>();
         List<AnimationTimer> timers = new ArrayList<>();
