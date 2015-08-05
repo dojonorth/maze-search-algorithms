@@ -48,16 +48,12 @@ public class MazeUI extends Application {
     public static final String MAZE_SEVEN = "Maze 7 (Braid)";
     public static final String MAZE_EIGHT = "Maze 8 (Braid)";
 
-    public static final DIR[] MAZE_ONE_ROUTE =
-            new DIR[]{ DIR.N, DIR.N, DIR.N, DIR.W, DIR.N };
-
     public static final int CELL_LENGTH = 20;
     public static final int GAP = 5;
 
     final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
 
     private Maze maze;
-    private Group pathGroup = new Group();
     private Integer dimensions = 5;
     private Integer colX = 5;
 
@@ -146,8 +142,6 @@ public class MazeUI extends Application {
             gc.clearRect(0, 0,
                     canvas.getHeight(),
                     canvas.getWidth());
-            root.getChildren().remove(pathGroup);
-            pathGroup.getChildren().clear();
 
             root.getChildren().remove(exitMarker);
             setBoxBlur(gc);
@@ -155,7 +149,6 @@ public class MazeUI extends Application {
             if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
                 if (!"".equals(dimensionsTextField.getText())) {
                     dimensions = Integer.valueOf(dimensionsTextField.getText());
-//                        colX = Integer.valueOf(widthTextField.getText());
                     try {
                         maze = new Maze(dimensions, mazeGenComboBox.getValue().toString());
                     } catch (Throwable e) {
@@ -181,9 +174,7 @@ public class MazeUI extends Application {
             }
 
             drawMaze(gc);
-            root.getChildren().add(pathGroup);
         });
-
 
         Button solveMazeBtn = new Button();
         solveMazeBtn.setText("Solve");
@@ -268,19 +259,6 @@ public class MazeUI extends Application {
         MazeViewer.display(this.maze);
     }
 
-    private List<Circle> generatePath(List<Path> route, Circle entranceMarker) {
-        double entranceX = entranceMarker.getCenterX(),
-            entranceY = entranceMarker.getCenterY();
-        List<Circle> path = new ArrayList<>();
-        for (int i = 0; i < route.size(); i++) {
-            // create next circle in the path with Opacity 0 so we can animate each circle
-            Circle nextInPath = new Circle(entranceX + calculateNextPosX(route.get(i).x), entranceY + calculateNextPosY(route.get(i).y), 5, Color.web("green", 0.5));
-            path.add(nextInPath);
-        }
-
-        return path;
-    }
-
     void animateRoute(List<Path> path, Circle entranceMarker, GraphicsContext gc) {
         double entranceX = entranceMarker.getCenterX();
         double entranceY = entranceMarker.getCenterY();
@@ -295,8 +273,6 @@ public class MazeUI extends Application {
         for (int i = 0; i < path.size(); i++) {
             Path pathEntry = path.get(i);
             DoubleProperty opacity = new SimpleDoubleProperty();
-//            Circle pathEntry = path.get(i);
-            // animate Opacity 0% to 100% for each circle
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs),
                     new KeyValue(opacity, 0)));
