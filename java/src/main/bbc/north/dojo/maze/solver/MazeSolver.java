@@ -1,14 +1,20 @@
 package bbc.north.dojo.maze.solver;
 
-import bbc.north.dojo.maze.generator.DefaultMazeGenerator;
+import bbc.north.dojo.maze.Path;
+
+import java.util.List;
 
 public class MazeSolver {
 
+    public MazeSolver(int[][] representation) {
+
+    }
+
     /**
      * Returns a path for the solution through the maze
-     * @return
+     * @return list of Path objects
      */
-    public DefaultMazeGenerator.DIR[] solve() {
+    public List<Path> solve() {
         return null;
     }
 }
