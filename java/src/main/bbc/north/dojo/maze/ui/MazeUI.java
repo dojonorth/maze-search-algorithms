@@ -57,8 +57,10 @@ public class MazeUI extends Application {
     private Integer dimensions = 5;
     private Integer colX = 5;
 
-    final Label dimensionsLabel = new Label("Dimensions");
+    final Label dimensionsLabel = new Label("Dimensions:");
     final TextField dimensionsTextField = new TextField();
+    final Label efficiencyLabel = new Label();
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -186,6 +188,7 @@ public class MazeUI extends Application {
             try {
                 solution = solver.solve();
                 animateRoute(solution, entranceMarker, gc);
+                efficiencyLabel.setText("Efficiency: " + solution.size() + " steps");
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -193,6 +196,7 @@ public class MazeUI extends Application {
 
         grid.add(btn, 0, 4);
         grid.add(solveMazeBtn, 3, 4);
+        grid.add(efficiencyLabel, 4, 4);
         grid.add(canvas, 0, 5);
         root.getChildren().add(grid);
     }
