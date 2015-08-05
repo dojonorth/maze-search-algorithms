@@ -20,6 +20,7 @@
 
           mazeUi.clear();
           mazeUi.draw();
+          document.getElementById("efficiency").innerText = '';
         } else {
           console.log('Sorry, the app won\'t handle values of x or y greater than 100');
         }
@@ -27,16 +28,19 @@
 
       function precannedMaze() {
         var e = document.getElementById("precanned-mazes");
-        var maze = e.options[e.selectedIndex].text;
+        var maze = e.options[e.selectedIndex].value;
         mazeObj = require('./lib/generator/precanned-maze')(maze);
         mazeUi = require('./lib/ui/ui')(document, "maze", mazeObj);
 
         mazeUi.clear();
         mazeUi.draw();
+        document.getElementById("efficiency").innerText = '';
       }
 
       function drawSolution() {
-        mazeUi.drawSolution(require('./lib/solution.js')(mazeObj));
+        var solution = require('./lib/solution.js')(mazeObj);
+        mazeUi.drawSolution(solution);
+        document.getElementById("efficiency").innerText = 'Solved in ' + solution.length + ' steps.';
       }
 
     </script>
@@ -49,15 +53,19 @@
       <input id="generate" type="button" value="Generate Maze" onclick="drawMaze();" />
     </div>
     <div class="precanned-maze-container">
-      <label>Load precanned maze:</label>
+      <label>Load maze:</label>
       <select id="precanned-mazes" onchange="precannedMaze();">
-        <option value="mazeProblemOne">mazeProblemOne</option>
-        <option value="mazeProblemTwo">mazeProblemTwo</option>
-        <option value="mazeProblemThree">mazeProblemThree</option>
-        <option value="mazeProblemFour">mazeProblemFour</option>
-        <option value="mazeProblemFive">mazeProblemFive</option>
+        <option value="mazeProblemOne">Back track maze 1</option>
+        <option value="mazeProblemTwo">Back track maze 2</option>
+        <option value="mazeProblemThree">Back track maze 3</option>
+        <option value="mazeProblemFour">Back track maze 4</option>
+        <option value="mazeProblemFive">Back track maze 5</option>
+        <option value="braidProblemOne">Braid maze 1</option>
+        <option value="braidProblemTwo">Braid maze 2</option>
+        <option value="braidProblemThree">Braid maze 3</option>
       </select>
       <input id="generate" type="button" value="Solve Maze" onclick="drawSolution();" />
+      <span id="efficiency"></span>
     </div>
     <canvas id="maze" width="600" height="600"></canvas>
     <script>
