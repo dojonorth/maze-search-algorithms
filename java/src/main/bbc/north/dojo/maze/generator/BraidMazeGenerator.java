@@ -211,9 +211,6 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
     }
 
     private boolean hasMoreThanOneAvailableRoute(int traversalState) {
-//        return traversalState == 3 || traversalState == 5 || traversalState == 6 || traversalState  == 9 ||
-//                traversalState == 10 || traversalState == 12 ||
-//                traversalState == 7 || traversalState == 11 || traversalState == 13 || traversalState == 14;
         return hasTwoAvailableRoutes(traversalState) || hasThreeAvailableRoutes(traversalState);
     }
 
