@@ -46,15 +46,11 @@ module.exports = function(doc, elemId, maze) {
 
     drawSolution: function(path) {
       if (path.length > 0) {
-        var currentX = 0;
-        var currentY = 0;
-        self.ctx.fillRect(currentX, currentY, self.cellWidth, self.cellHeight);
         var i = 0;
         function draw() {
-            var dir = path[i];
-            currentX = currentX + calculateNextPosX(dir);
-            currentY = currentY + calculateNextPosY(dir);
-            self.ctx.fillRect(_.clone(currentX), _.clone(currentY), self.cellWidth, self.cellHeight);
+            var x = path[i][0] * self.cellWidth;
+            var y = path[i][1] * self.cellHeight;
+            self.ctx.fillRect(x, y, self.cellWidth, self.cellHeight);
             i++;
             if (i < path.length) {
               window.requestAnimationFrame(draw)
@@ -121,32 +117,6 @@ module.exports = function(doc, elemId, maze) {
       self.ctx.clearRect(0, 0, self.canvas.width, self.canvas.height);
     }
   };
-
-  function calculateNextPosX(dir) {
-      var multiplier;
-      var shiftBy = 0;
-      if (dir === 4) {
-          multiplier = 1;
-          shiftBy = (multiplier * this.cellWidth);
-      } else if (dir === 8) {
-          multiplier = -1;
-          shiftBy = (multiplier * this.cellWidth);
-      }
-      return shiftBy;
-  }
-
-  function calculateNextPosY(dir) {
-      var multiplier;
-      var shiftBy = 0;
-      if (dir === 1) {
-          multiplier = -1;
-          shiftBy = (multiplier * this.cellHeight);
-      } else if (dir === 2) {
-          multiplier = 1;
-          shiftBy = (multiplier * this.cellHeight);
-      }
-      return shiftBy;
-  }
 };
 
 
