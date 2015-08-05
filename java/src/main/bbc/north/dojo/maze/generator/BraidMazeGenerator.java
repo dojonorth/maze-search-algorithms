@@ -1,9 +1,6 @@
 package bbc.north.dojo.maze.generator;
 
-import bbc.north.dojo.maze.InitialTraversal;
-import bbc.north.dojo.maze.Intersection;
-import bbc.north.dojo.maze.Traversal;
-import bbc.north.dojo.maze.TraversalGraph;
+import bbc.north.dojo.maze.*;
 
 import java.util.*;
 
@@ -35,7 +32,6 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
 
     @Override
     public int[][] generateMaze(int cx, int cy) throws Throwable {
-
         maze = recursiveBacktrack(cx, cy);
         // 1. Create traversal graph
         traversalGraph = new TraversalGraph(maze);
