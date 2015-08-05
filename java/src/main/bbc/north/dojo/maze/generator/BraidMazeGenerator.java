@@ -162,12 +162,7 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         return maze;
     }
 
-    private int flipBits(int n, int k) {
-        int mask = (1 << k) - 1;
-        return ~n & mask;
-    }
-
-    private HashSet<DIR> listAvailableDirectionsExcludingOuterWalls(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
+    private HashSet<DIR> listAvailableDirectionsExcludingOuterWalls(int cx, int cy) throws MazeGenerationFailureException {
         HashSet<DIR> availableDirections = new HashSet<>();
         availableDirections.add(DIR.N);
         availableDirections.add(DIR.E);
@@ -191,7 +186,7 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
     }
 
     private HashSet<DIR> listAvailableInternalDirectionsExcludingOuterWallsAndPreviousTraversal(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
-        HashSet<DIR> availableDirections = listAvailableDirectionsExcludingOuterWalls(cx, cy, traversal);
+        HashSet<DIR> availableDirections = listAvailableDirectionsExcludingOuterWalls(cx, cy);
         availableDirections.remove(traversal.previous.opposite);
         return availableDirections;
     }

@@ -1,6 +1,8 @@
 package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.Maze;
+import bbc.north.dojo.maze.Path;
+import bbc.north.dojo.maze.solver.MazeSolver;
 import bbc.north.dojo.maze.viewer.MazeViewer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -100,7 +102,7 @@ public class MazeUI extends Application {
         gc.setEffect(null);
     }
 
-    private void drawMazeView(Group root) throws Throwable {
+    private void drawMazeView(Group root) {
         Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
@@ -141,8 +143,9 @@ public class MazeUI extends Application {
             gc.clearRect(0, 0,
                     canvas.getHeight(),
                     canvas.getWidth());
-            pathGroup.getChildren().clear();
             root.getChildren().remove(pathGroup);
+            pathGroup.getChildren().clear();
+
             root.getChildren().remove(exitMarker);
             setBoxBlur(gc);
 
@@ -184,7 +187,26 @@ public class MazeUI extends Application {
             root.getChildren().add(pathGroup);
         });
 
+
+        Button solveMazeBtn = new Button();
+        solveMazeBtn.setText("Solve");
+        solveMazeBtn.setOnAction(event -> {
+            System.out.println("Solving maze...");
+
+            MazeSolver solver = new MazeSolver(maze.representation());
+            List<Path> solution;
+            try {
+                solution = solver.solve();
+                List<Circle> path = generatePath(solution, entranceMarker);
+                animateRoute(path);
+                pathGroup.getChildren().addAll(path);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        });
+
         grid.add(btn, 0, 4);
+        grid.add(solveMazeBtn, 3, 4);
         grid.add(canvas, 0, 5);
         root.getChildren().add(grid);
     }
@@ -251,16 +273,14 @@ public class MazeUI extends Application {
         MazeViewer.display(this.maze);
     }
 
-    private List<Circle> generatePath(DIR[] route, Circle entranceMarker) {
-        double previousX = entranceMarker.getCenterX(),
-            previousY = entranceMarker.getCenterY();
+    private List<Circle> generatePath(List<Path> route, Circle entranceMarker) {
+        double entranceX = entranceMarker.getCenterX(),
+            entranceY = entranceMarker.getCenterY();
         List<Circle> path = new ArrayList<>();
-        for (int i = 0; i < route.length; i++) {
+        for (int i = 0; i < route.size(); i++) {
             // create next circle in the path with Opacity 0 so we can animate each circle
-            Circle nextInPath = new Circle(previousX + calculateNextPosX(route[i]), previousY + calculateNextPosY(route[i]), 5, Color.web("green", 1));
+            Circle nextInPath = new Circle(entranceX + calculateNextPosX(route.get(i).x), entranceY + calculateNextPosY(route.get(i).y), 5, Color.web("green", 0.5));
             path.add(nextInPath);
-            previousX += calculateNextPosX(route[i]);
-            previousY += calculateNextPosY(route[i]);
         }
 
         return path;
@@ -269,7 +289,7 @@ public class MazeUI extends Application {
     void animateRoute(List<Circle> path) {
 
         int currentKeyFrameTimeInMs = 0,
-            keyframeTimeInMs = 400;
+            keyframeTimeInMs = 100;
         Timeline timeline = new Timeline();
         List<KeyFrame> keyFrames = new ArrayList<>();
         for (int i = 0; i < path.size(); i++) {  // we've already rendered first entry
@@ -281,7 +301,7 @@ public class MazeUI extends Application {
                     new KeyValue(pathEntry.opacityProperty(), 0)));
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs + keyframeTimeInMs),
-                    new KeyValue(pathEntry.opacityProperty(), 1)));
+                    new KeyValue(pathEntry.opacityProperty(), 10)));
 
             currentKeyFrameTimeInMs += keyframeTimeInMs;
         }
@@ -289,29 +309,13 @@ public class MazeUI extends Application {
         timeline.play();
     }
 
-    private int calculateNextPosX(DIR dir) {
-        int multiplier,
-            shiftBy = 0;
-        if (dir.equals(dir.E)) {
-            multiplier = 1;
-            shiftBy = (multiplier * CELL_LENGTH) + GAP;
-        } else if (dir.equals(dir.W)) {
-            multiplier = -1;
-            shiftBy = (multiplier * CELL_LENGTH) - GAP;
-        }
+    private int calculateNextPosX(int x) {
+        int shiftBy = (x * (CELL_LENGTH + 5)) + GAP;
         return shiftBy;
     }
 
-    private int calculateNextPosY(DIR dir) {
-        int multiplier,
-            shiftBy = 0;
-        if (dir.equals(dir.N)) {
-            multiplier = -1;
-            shiftBy = (multiplier * CELL_LENGTH) - GAP;
-        } else if (dir.equals(dir.S)) {
-            multiplier = 1;
-            shiftBy = (multiplier * CELL_LENGTH) + GAP;
-        }
+    private int calculateNextPosY(int y) {
+        int shiftBy = (y * (CELL_LENGTH + 5)) + GAP;
         return shiftBy;
     }
 
