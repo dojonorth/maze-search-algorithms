@@ -1,11 +1,16 @@
 package bbc.north.dojo.maze.ui;
 
 import bbc.north.dojo.maze.Maze;
+import bbc.north.dojo.maze.Path;
+import bbc.north.dojo.maze.solver.MazeSolver;
 import bbc.north.dojo.maze.viewer.MazeViewer;
+import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -43,16 +48,12 @@ public class MazeUI extends Application {
     public static final String MAZE_SEVEN = "Maze 7 (Braid)";
     public static final String MAZE_EIGHT = "Maze 8 (Braid)";
 
-    public static final DIR[] MAZE_ONE_ROUTE =
-            new DIR[]{ DIR.N, DIR.N, DIR.N, DIR.W, DIR.N };
-
     public static final int CELL_LENGTH = 20;
     public static final int GAP = 5;
 
     final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
 
     private Maze maze;
-    private Group pathGroup = new Group();
     private Integer dimensions = 5;
     private Integer colX = 5;
 
@@ -100,7 +101,7 @@ public class MazeUI extends Application {
         gc.setEffect(null);
     }
 
-    private void drawMazeView(Group root) throws Throwable {
+    private void drawMazeView(Group root) {
         Canvas canvas = new Canvas(800, 800);
         GraphicsContext gc = initialiseGraphicsContext(canvas);
 
@@ -141,15 +142,13 @@ public class MazeUI extends Application {
             gc.clearRect(0, 0,
                     canvas.getHeight(),
                     canvas.getWidth());
-            pathGroup.getChildren().clear();
-            root.getChildren().remove(pathGroup);
+
             root.getChildren().remove(exitMarker);
             setBoxBlur(gc);
 
             if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
                 if (!"".equals(dimensionsTextField.getText())) {
                     dimensions = Integer.valueOf(dimensionsTextField.getText());
-//                        colX = Integer.valueOf(widthTextField.getText());
                     try {
                         maze = new Maze(dimensions, mazeGenComboBox.getValue().toString());
                     } catch (Throwable e) {
@@ -175,16 +174,25 @@ public class MazeUI extends Application {
             }
 
             drawMaze(gc);
+        });
 
-//            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-//
-//            animateRoute(path);
+        Button solveMazeBtn = new Button();
+        solveMazeBtn.setText("Solve");
+        solveMazeBtn.setOnAction(event -> {
+            System.out.println("Solving maze...");
 
-//            pathGroup.getChildren().addAll(path);
-            root.getChildren().add(pathGroup);
+            MazeSolver solver = new MazeSolver(maze.representation());
+            List<Path> solution;
+            try {
+                solution = solver.solve();
+                animateRoute(solution, entranceMarker, gc);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
         });
 
         grid.add(btn, 0, 4);
+        grid.add(solveMazeBtn, 3, 4);
         grid.add(canvas, 0, 5);
         root.getChildren().add(grid);
     }
@@ -251,67 +259,61 @@ public class MazeUI extends Application {
         MazeViewer.display(this.maze);
     }
 
-    private List<Circle> generatePath(DIR[] route, Circle entranceMarker) {
-        double previousX = entranceMarker.getCenterX(),
-            previousY = entranceMarker.getCenterY();
-        List<Circle> path = new ArrayList<>();
-        for (int i = 0; i < route.length; i++) {
-            // create next circle in the path with Opacity 0 so we can animate each circle
-            Circle nextInPath = new Circle(previousX + calculateNextPosX(route[i]), previousY + calculateNextPosY(route[i]), 5, Color.web("green", 1));
-            path.add(nextInPath);
-            previousX += calculateNextPosX(route[i]);
-            previousY += calculateNextPosY(route[i]);
-        }
-
-        return path;
-    }
-
-    void animateRoute(List<Circle> path) {
+    void animateRoute(List<Path> path, Circle entranceMarker, GraphicsContext gc) {
+        double entranceX = entranceMarker.getCenterX();
+        double entranceY = entranceMarker.getCenterY();
 
         int currentKeyFrameTimeInMs = 0,
-            keyframeTimeInMs = 400;
+            keyframeTimeInMs = 100;
         Timeline timeline = new Timeline();
-        List<KeyFrame> keyFrames = new ArrayList<>();
-        for (int i = 0; i < path.size(); i++) {  // we've already rendered first entry
 
-            Circle pathEntry = path.get(i);
-            // animate Opacity 0% to 100% for each circle
+        List<KeyFrame> keyFrames = new ArrayList<>();
+        List<AnimationTimer> timers = new ArrayList<>();
+
+        for (int i = 0; i < path.size(); i++) {
+            Path pathEntry = path.get(i);
+            DoubleProperty opacity = new SimpleDoubleProperty();
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs),
-                    new KeyValue(pathEntry.opacityProperty(), 0)));
+                    new KeyValue(opacity, 0)));
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs + keyframeTimeInMs),
-                    new KeyValue(pathEntry.opacityProperty(), 1)));
+                    new KeyValue(opacity, 1)));
+
+            timeline.setAutoReverse(true);
+            timeline.setCycleCount(1);
 
             currentKeyFrameTimeInMs += keyframeTimeInMs;
+
+            timers.add(new AnimationTimer() {
+                @Override
+                public void handle(long now) {
+                    gc.setFill(Color.FORESTGREEN.deriveColor(0, 1, 1, opacity.get()));
+                    gc.fillOval(
+                            entranceX + calculateNextPosX(pathEntry.x) - 18,
+                            entranceY + calculateNextPosY(pathEntry.y) - 173,
+                            8,
+                            8
+                    );
+                }
+            });
         }
+
         timeline.getKeyFrames().addAll(keyFrames);
+
+        for (int i = 0; i < path.size(); i++) {
+            timers.get(i).start();
+        }
         timeline.play();
     }
 
-    private int calculateNextPosX(DIR dir) {
-        int multiplier,
-            shiftBy = 0;
-        if (dir.equals(dir.E)) {
-            multiplier = 1;
-            shiftBy = (multiplier * CELL_LENGTH) + GAP;
-        } else if (dir.equals(dir.W)) {
-            multiplier = -1;
-            shiftBy = (multiplier * CELL_LENGTH) - GAP;
-        }
+    private int calculateNextPosX(int x) {
+        int shiftBy = (x * (CELL_LENGTH + 5)) + GAP;
         return shiftBy;
     }
 
-    private int calculateNextPosY(DIR dir) {
-        int multiplier,
-            shiftBy = 0;
-        if (dir.equals(dir.N)) {
-            multiplier = -1;
-            shiftBy = (multiplier * CELL_LENGTH) - GAP;
-        } else if (dir.equals(dir.S)) {
-            multiplier = 1;
-            shiftBy = (multiplier * CELL_LENGTH) + GAP;
-        }
+    private int calculateNextPosY(int y) {
+        int shiftBy = (y * (CELL_LENGTH + 5)) + GAP;
         return shiftBy;
     }
 
