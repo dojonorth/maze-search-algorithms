@@ -50,6 +50,7 @@ public class DefaultMazeGenerator implements MazeGenerator {
         public final int dx;
         public final int dy;
         public DIR opposite;
+
         // use the static initializer to resolve forward references
         static {
             N.opposite = S;
@@ -66,60 +67,48 @@ public class DefaultMazeGenerator implements MazeGenerator {
 
         public static DIR[] toArray(int availableDirections) {
             if (availableDirections == 1) {
-                return new DIR[] { DIR.N };
+                return new DIR[]{DIR.N};
             } else if (availableDirections == 2) {
-                return new DIR[] { DIR.S };
+                return new DIR[]{DIR.S};
             } else if (availableDirections == 3) {
-                return new DIR[] { DIR.N, DIR.S };
+                return new DIR[]{DIR.N, DIR.S};
             } else if (availableDirections == 4) {
-                return new DIR[] { DIR.E };
+                return new DIR[]{DIR.E};
             } else if (availableDirections == 5) {
-                return new DIR[] { DIR.E, DIR.N };
+                return new DIR[]{DIR.E, DIR.N};
             } else if (availableDirections == 6) {
-                return new DIR[] { DIR.E, DIR.S };
+                return new DIR[]{DIR.E, DIR.S};
             } else if (availableDirections == 7) {
-                return new DIR[] { DIR.N, DIR.S, DIR.E };
+                return new DIR[]{DIR.N, DIR.S, DIR.E};
             } else if (availableDirections == 8) {
-                return new DIR[] { DIR.W };
+                return new DIR[]{DIR.W};
             } else if (availableDirections == 9) {
-                return new DIR[] { DIR.W, DIR.N };
+                return new DIR[]{DIR.W, DIR.N};
             } else if (availableDirections == 10) {
-                return new DIR[] { DIR.W, DIR.S };
+                return new DIR[]{DIR.W, DIR.S};
             } else if (availableDirections == 11) {
-                return new DIR[] { DIR.W, DIR.S, DIR.N };
+                return new DIR[]{DIR.W, DIR.S, DIR.N};
             } else if (availableDirections == 12) {
-                return new DIR[] { DIR.W, DIR.E };
+                return new DIR[]{DIR.W, DIR.E};
             } else if (availableDirections == 13) {
-                return new DIR[] { DIR.N, DIR.E, DIR.W };
+                return new DIR[]{DIR.N, DIR.E, DIR.W};
             } else if (availableDirections == 14) {
-                return new DIR[] { DIR.S, DIR.E, DIR.W };
+                return new DIR[]{DIR.S, DIR.E, DIR.W};
             }
             return new DIR[0];  //To change body of created methods use File | Settings | File Templates.
         }
 
         public static DIR toTraversalDirection(int direction) throws Exception {
-            if (direction != 1 && direction != 2 && direction != 4 && direction != 8) {
-                throw new Exception("Invalid current state: current[" + direction +"]");
-            }
             if (direction == 1) { // only available is north
                 return DIR.N;
             } else if (direction == 2) { // only available is west
                 return DIR.S;
             } else if (direction == 4) { // only available is east
                 return DIR.E;
-            } else { // only available is south
+            } else if (direction == 8) { // only available is south
                 return DIR.W;
             }
-        }
-    }
-
-    public enum TRAVERSAL {
-        TRAVERSED(1), AVAILABLE_1(2), AVAILABLE_2(4), AVAILABLE_3(8), DEAD_END(16), EXIT(32);
-
-        public final int state;
-
-        TRAVERSAL(int bit) {
-            this.state = bit;
+            throw new Exception("Invalid current state: current[" + direction + "]");
         }
     }
 }

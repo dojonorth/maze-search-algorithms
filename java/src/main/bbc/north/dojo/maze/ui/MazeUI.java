@@ -39,6 +39,9 @@ public class MazeUI extends Application {
     public static final String MAZE_THREE = "Maze 3 (Backtrack)";
     public static final String MAZE_FOUR = "Maze 4 (Backtrack)";
     public static final String MAZE_FIVE = "Maze 5 (Backtrack)";
+    public static final String MAZE_SIX = "Maze 6 (Braid)";
+    public static final String MAZE_SEVEN = "Maze 7 (Braid)";
+    public static final String MAZE_EIGHT = "Maze 8 (Braid)";
 
     public static final DIR[] MAZE_ONE_ROUTE =
             new DIR[]{ DIR.N, DIR.N, DIR.N, DIR.W, DIR.N };
@@ -54,11 +57,7 @@ public class MazeUI extends Application {
     private Integer colX = 5;
 
     final Label dimensionsLabel = new Label("Dimensions");
-//    final Label heightLabel = new Label("Height:");
     final TextField dimensionsTextField = new TextField();
-
-//    final Label widthLabel = new Label("Width:");
-//    final TextField widthTextField = new TextField();
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -117,16 +116,19 @@ public class MazeUI extends Application {
         grid.getColumnConstraints().add(labelConstraints);
 
         grid.add(dimensionsLabel, 0, 0);
-//        grid.add(heightLabel, 0, 1);
-//        grid.add(widthLabel, 0, 2);
         grid.add(dimensionsTextField, 0, 1);
-//        grid.add(widthTextField, 1, 2);
 
         final ComboBox mazeGenComboBox = addMazeGeneratorComboBox();
         final ComboBox<String> preGenComboBox = addPreGeneratedMazeTypes();
 
         grid.add(mazeGenComboBox, 3, 1);
         grid.add(preGenComboBox, 3, 2);
+
+        Circle entranceMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("blue", 0.5));
+        root.getChildren().add(entranceMarker);
+
+        Circle exitMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForExit(), calculateTopLeftCellY() + calculateYOffsetForExit(), 5, Color.web("red", 0.5));
+        root.getChildren().add(exitMarker);
 
         // Create button that allows you to generate a new maze
         Button btn = new Button();
@@ -141,6 +143,7 @@ public class MazeUI extends Application {
                     canvas.getWidth());
             pathGroup.getChildren().clear();
             root.getChildren().remove(pathGroup);
+            root.getChildren().remove(exitMarker);
             setBoxBlur(gc);
 
             if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
@@ -154,31 +157,30 @@ public class MazeUI extends Application {
                     }
                 }
             } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
-                maze = new Maze(Maze.mazeProblemOne);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_ONE);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
-                maze = new Maze(Maze.mazeProblemTwo);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_TWO);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
-                maze = new Maze(Maze.mazeProblemThree);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_THREE);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
-                maze = new Maze(Maze.mazeProblemFour);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_FOUR);
             } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
-                maze = new Maze(Maze.mazeProblemFive);
+                maze = new Maze(Maze.BT_MAZE_PROBLEM_FIVE);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_SIX)) {
+                maze = new Maze(Maze.BRAID_MAZE_PROBLEM_ONE);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_SEVEN)) {
+                maze = new Maze(Maze.BRAID_MAZE_PROBLEM_TWO);
+            } else if (preGenComboBox.getValue().toString().equals(MAZE_EIGHT)) {
+                maze = new Maze(Maze.BRAID_MAZE_PROBLEM_THREE);
             }
 
             drawMaze(gc);
 
-            Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
-            root.getChildren().add(entranceMarker);
-            Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
-            root.getChildren().add(exitMarker);
+//            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+//
+//            animateRoute(path);
 
-            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-//                path.add(entranceMarker);
-//                path.add(exitMarker);
-
-            animateRoute(path);
-
-            pathGroup.getChildren().addAll(path);
+//            pathGroup.getChildren().addAll(path);
             root.getChildren().add(pathGroup);
         });
 
@@ -191,7 +193,8 @@ public class MazeUI extends Application {
 
         ObservableList<String> preGeneratedMazes = FXCollections.observableArrayList(
                 DEFAULT_PRE_GEN_MAZE_TYPE,
-                MAZE_ONE, MAZE_TWO, MAZE_THREE, MAZE_FOUR, MAZE_FIVE
+                MAZE_ONE, MAZE_TWO, MAZE_THREE, MAZE_FOUR, MAZE_FIVE,
+                MAZE_SIX, MAZE_SEVEN, MAZE_EIGHT
         );
 
         final ComboBox<String> preGenComboBox = new ComboBox(preGeneratedMazes);
@@ -320,11 +323,11 @@ public class MazeUI extends Application {
         return 195;
     }
 
-    private int calculateXOffsetForEntrance() {
-        return (colX - 1) * (CELL_LENGTH + GAP);
+    private int calculateXOffsetForExit() {
+        return (dimensions - 1) * (CELL_LENGTH + GAP);
     }
 
-    private int calculateYOffsetForEntrance() {
+    private int calculateYOffsetForExit() {
         return (dimensions - 1) * (CELL_LENGTH + GAP);
     }
 

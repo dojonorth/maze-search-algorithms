@@ -2,25 +2,21 @@ package bbc.north.dojo.maze;
 
 import bbc.north.dojo.maze.generator.DefaultMazeGenerator;
 
-import java.util.Arrays;
-
-/**
- * Created by jamesmurphy on 02/08/2015.
- */
 public class TraversalGraph {
     private int[][] graph;
 
     public TraversalGraph(int[][] maze) {
-        int [][] traversalGraph = new int[maze.length][];
-        for(int i = 0; i < maze.length; i++)
-        {
-            int[] aMaze = maze[i];
-            int   aLength = aMaze.length;
-            traversalGraph[i] = new int[aLength];
-            System.arraycopy(aMaze, 0, traversalGraph[i], 0, aLength);
+        this.graph = deepCopy(maze);
+    }
+
+    private int[][] deepCopy(int[][] originalArray) {
+        int[][] newArray = new int[originalArray.length][];
+
+        for (int x = 0; x < originalArray.length; x++) {
+            newArray[x] = originalArray[x].clone();
         }
 
-        this.graph = traversalGraph;
+        return newArray;
     }
 
     public int[][] graph() {
@@ -32,10 +28,26 @@ public class TraversalGraph {
     }
 
     public int state(int cx, int cy) {
+        try {
+            int value = graph[cx][cy];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
         return graph[cx][cy];
     }
 
     public void oneLessTraversal(int cx, int cy, DefaultMazeGenerator.DIR directionTraversed) {
-        graph[cx][cy] -= directionTraversed.state;
+        if (graph[cx][cy] >= directionTraversed.state) {
+            graph[cx][cy] -= directionTraversed.state;
+        }
+        int nx = directionTraversed.dx + cx;
+        int ny = directionTraversed.dy + cy;
+        if (graph[nx][ny] >= directionTraversed.opposite.state) {
+            graph[nx][ny] -= directionTraversed.opposite.state;
+        }
+    }
+
+    public void traversal(int cx, int cy, int traversalState) {
+        graph[cx][cy] += traversalState;
     }
 }

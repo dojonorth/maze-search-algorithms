@@ -1,9 +1,6 @@
 package bbc.north.dojo.maze.generator;
 
-import bbc.north.dojo.maze.InitialTraversal;
-import bbc.north.dojo.maze.Intersection;
-import bbc.north.dojo.maze.Traversal;
-import bbc.north.dojo.maze.TraversalGraph;
+import bbc.north.dojo.maze.*;
 
 import java.util.*;
 
@@ -35,18 +32,18 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
 
     @Override
     public int[][] generateMaze(int cx, int cy) throws Throwable {
-
         maze = recursiveBacktrack(cx, cy);
         // 1. Create traversal graph
         traversalGraph = new TraversalGraph(maze);
 
         // 2.Start at entrance (get the entrance cell)
-        int entranceX = x - 1,
-            entranceY = y - 1;
+        int entranceX = 0,
+            entranceY = 0;
 
         int current = maze[entranceX][entranceY];
         traversalCount = 0;
-        return traverse(new InitialTraversal(current, entranceX, entranceY), traversalCount);
+        int[][] braidMaze = traverse(new InitialTraversal(current, entranceX, entranceY), traversalCount);
+        return braidMaze;
     }
 
     private int[][] traverse(Traversal traversal, int traversalCount) throws Throwable {
@@ -56,44 +53,34 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         int cx = traversal.toX(),
             cy = traversal.toY();
 
-        int availableTraversals = traversalGraph.graph()[traversal.toX()][traversal.toY()];
-        if (traversal.previous != null) { // we can't go back on ourselves
-            availableTraversals -= traversal.previous.opposite.state;
-        }
-        int current = traversal.state;
+        int availableTraversals = traversalGraph.state(cx, cy);
         if (hasOneAvailableRoute(availableTraversals)) {
             availableDirection = DIR.toTraversalDirection(availableTraversals);
 
             // 7.Remove from the 'toVisit' queue
-            String toVisitKey = toVisitKey(cx, cy);
-            if (toVisit.containsKey(toVisitKey)) {
-                toVisit.remove(toVisitKey);
-            }
+            ifInToVisitQueueRemoveIt(cx, cy);
 
             // correct the traversal graph to remove one of the traversals
-            // since we just traversed it
+            // since we just traversed itw
 
-            traverseInNextDirection(cx, cy, traversalCount, availableDirection, current);
+            traverseInNextDirection(cx, cy, traversalCount, availableDirection, availableTraversals);
         } else if (hasMoreThanOneAvailableRoute(availableTraversals)) {
 //            int availableDirections = listOfAvailableDirections(cx, cy);
 
-            availableDirection = selectRandomDirection(DIR.toArray(availableTraversals));
+            availableDirection = selectRandomDirection(availableTraversals);
 
             int nextDirectionState = traversalGraph.state(availableDirection.dx + cx, availableDirection.dy + cy);
 
             // recalculate the traversal value for this route
             // check if available direction has been traversed or not
-            if (traversed(nextDirectionState)) {
-                // if it has do nothing
-                traverseToNextIntersection(traversalCount);
-            } else {
+            if (!traversed(nextDirectionState)) {
                 if (!toVisit.containsKey(toVisitKey(cx,cy))) {
                     toVisit.put(toVisitKey(cx, cy), new Intersection(cx, cy));
                 }
 
-                traverseInNextDirection(cx, cy, traversalCount, availableDirection, current);
+                traverseInNextDirection(cx, cy, traversalCount, availableDirection, availableTraversals);
             }
-        } else if (isDeadEnd(availableTraversals) || traversed(availableTraversals)) {
+        } else if (isDeadEnd(cx, cy)) {
             // 8.Are we at a dead end? i.e. there no options?
             // 9a.Yes - Remove a random wall but not a side wall
             // if cy == 0 -- south wall
@@ -102,42 +89,56 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
             // if cx + 1 % maze.length == 0 -- north wall
             System.out.println("Removing dead end");
             maze = removeRandomDeadEndWall(cx, cy, traversal);
-            // mark the dead end as traversed (it's not a dead end any more
+            // mark the dead end as traversed (it's not a dead end any more)
             traversalGraph.markTraversed(cx, cy);
+        } else if (traversed(availableTraversals)) {
+            ifInToVisitQueueRemoveIt(cx, cy);
         }
         traverseToNextIntersection(traversalCount);
         return maze;
     }
 
-    private void traverseInNextDirection(int cx, int cy, int traversalCount, DIR availableDirection, int current) throws Throwable {
+    private void ifInToVisitQueueRemoveIt(int cx, int cy) {
+        String toVisitKey = toVisitKey(cx, cy);
+        if (toVisit.containsKey(toVisitKey)) {
+            toVisit.remove(toVisitKey);
+        }
+    }
+
+    private void traverseInNextDirection(int cx, int cy, int traversalCount, DIR availableDirection, int availableTraversals) throws Throwable {
         traversalGraph.oneLessTraversal(cx, cy, availableDirection);
-        if (traversalCount < x * y) {
+
+        if (traversalCount <= x * y) {
             // re-traverse by following the next available direction
             int nx = cx + availableDirection.dx;
             int ny = cy + availableDirection.dy;
 
-            current = maze[nx][ny];
+            try {
+                availableTraversals = traversalGraph.state(nx, ny);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
             traversalCount = traversalCount + 1;
-            traverse(new Traversal(current, availableDirection, nx, ny), traversalCount);
+            traverse(new Traversal(availableTraversals, availableDirection, nx, ny), traversalCount);
         }
     }
 
     private void traverseToNextIntersection(int traversalCount) throws Throwable {
-        int current;
+        int intersectionTraversals;
         if (toVisit.size() > 0) {
             Intersection nextIntersection = toVisit.get(toVisit.keySet().iterator().next()); // get the last intersection (always work from the back -- more efficient)
-            int nx = 0, ny = 0;
-            nx = nextIntersection.x;
-            ny = nextIntersection.y;
+            int nx = nextIntersection.x;
+            int ny = nextIntersection.y;
 
-            current = maze[nx][ny];
+            intersectionTraversals = traversalGraph.state(nx, ny);
+
             traversalCount = traversalCount + 1;
-            traverse(new Traversal(current, true, nextIntersection.x, nextIntersection.y),  traversalCount);
+            traverse(new Traversal(intersectionTraversals, nx, ny),  traversalCount);
         }
     }
 
     private boolean traversed(int traversalState) {
-        return traversalState == 15;
+        return traversalState == 0;
     }
 
     private String toVisitKey(int cx, int cy) {
@@ -145,13 +146,16 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
     }
 
     private int[][] removeRandomDeadEndWall(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
-        HashSet<DIR> availableWallsToRemove = listDeadEndInnerWallsToRemove(cx, cy, traversal);
+        HashSet<DIR> availableWallsToRemove = listAvailableInternalDirectionsExcludingOuterWallsAndPreviousTraversal(cx, cy, traversal);
         Collections.shuffle(Arrays.asList(availableWallsToRemove));
         DIR wallToRemove;
         Iterator<DIR> iter = availableWallsToRemove.iterator();
         while (iter.hasNext()) {
             wallToRemove = iter.next();
             maze[cx][cy] += wallToRemove.state;
+            // remove wall form traversal opposite direction
+            // cells store wall location in both directions
+            maze[wallToRemove.dx + cx][wallToRemove.dy + cy] += wallToRemove.opposite.state;
             return maze;
         }
 
@@ -163,35 +167,39 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         return ~n & mask;
     }
 
-    private HashSet<DIR> listDeadEndInnerWallsToRemove(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
-        HashSet<DIR> innerWallsToRemove = new HashSet<>();
-        innerWallsToRemove.add(DIR.N);
-        innerWallsToRemove.add(DIR.E);
-        innerWallsToRemove.add(DIR.W);
-        innerWallsToRemove.add(DIR.S);
-
-        // Remove the previous direction since we know there's no wall here
-        innerWallsToRemove.remove(traversal.previous.opposite);
+    private HashSet<DIR> listAvailableDirectionsExcludingOuterWalls(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
+        HashSet<DIR> availableDirections = new HashSet<>();
+        availableDirections.add(DIR.N);
+        availableDirections.add(DIR.E);
+        availableDirections.add(DIR.W);
+        availableDirections.add(DIR.S);
 
         if (isAdjacentToSouthWall(cy)) {
-            innerWallsToRemove.remove(DIR.S);
+            availableDirections.remove(DIR.S);
         }
         if (isAdjacentToNorthWall(cy)) {
-            innerWallsToRemove.remove(DIR.N);
+            availableDirections.remove(DIR.N);
         }
         if (isAdjacentToWestWall(cx)) {
-            innerWallsToRemove.remove(DIR.W);
+            availableDirections.remove(DIR.W);
         }
         if (isAdjacentToEastWall(cx)) {
-            innerWallsToRemove.remove(DIR.E);
+            availableDirections.remove(DIR.E);
         }
 
-        return innerWallsToRemove;
+        return availableDirections;
     }
 
-    private DIR selectRandomDirection(DIR[] available) {
-        Collections.shuffle(Arrays.asList(available));
-        return available[0];
+    private HashSet<DIR> listAvailableInternalDirectionsExcludingOuterWallsAndPreviousTraversal(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
+        HashSet<DIR> availableDirections = listAvailableDirectionsExcludingOuterWalls(cx, cy, traversal);
+        availableDirections.remove(traversal.previous.opposite);
+        return availableDirections;
+    }
+
+    private DIR selectRandomDirection(int availableTraversals) {
+        DIR[] availableDirections = DIR.toArray(availableTraversals);
+        Collections.shuffle(Arrays.asList(availableDirections));
+        return availableDirections[0];
     }
 
     private boolean hasOneAvailableRoute(int traversalState) {
@@ -211,8 +219,9 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         return traversalState == 7 || traversalState == 11 || traversalState == 13 || traversalState == 14;
     }
 
-    private boolean isDeadEnd(int availableTraversals) {
-        return availableTraversals == 0;
+    private boolean isDeadEnd(int cx, int cy) {
+        int traversalState = maze[cx][cy];
+        return traversalState == 1 || traversalState == 2 || traversalState == 4 || traversalState == 8;
     }
 
     private boolean isAdjacentToNorthWall(int cy) {
