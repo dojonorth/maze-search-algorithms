@@ -124,6 +124,12 @@ public class MazeUI extends Application {
         grid.add(mazeGenComboBox, 3, 1);
         grid.add(preGenComboBox, 3, 2);
 
+        Circle entranceMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("blue", 0.5));
+        root.getChildren().add(entranceMarker);
+
+        Circle exitMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForExit(), calculateTopLeftCellY() + calculateYOffsetForExit(), 5, Color.web("red", 0.5));
+        root.getChildren().add(exitMarker);
+
         // Create button that allows you to generate a new maze
         Button btn = new Button();
         btn.setText("Generate Maze");
@@ -137,6 +143,7 @@ public class MazeUI extends Application {
                     canvas.getWidth());
             pathGroup.getChildren().clear();
             root.getChildren().remove(pathGroup);
+            root.getChildren().remove(exitMarker);
             setBoxBlur(gc);
 
             if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
@@ -169,18 +176,11 @@ public class MazeUI extends Application {
 
             drawMaze(gc);
 
-            Circle entranceMarker = new Circle(calculateTopLeftCellX() + calculateXOffsetForEntrance(), calculateTopLeftCellY() + calculateYOffsetForEntrance(), 5, Color.web("blue", 0.5));
-            root.getChildren().add(entranceMarker);
-            Circle exitMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("red", 1.0));
-            root.getChildren().add(exitMarker);
+//            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
+//
+//            animateRoute(path);
 
-            List<Circle> path = generatePath(MAZE_ONE_ROUTE, entranceMarker);
-//                path.add(entranceMarker);
-//                path.add(exitMarker);
-
-            animateRoute(path);
-
-            pathGroup.getChildren().addAll(path);
+//            pathGroup.getChildren().addAll(path);
             root.getChildren().add(pathGroup);
         });
 
@@ -323,11 +323,11 @@ public class MazeUI extends Application {
         return 195;
     }
 
-    private int calculateXOffsetForEntrance() {
-        return (colX - 1) * (CELL_LENGTH + GAP);
+    private int calculateXOffsetForExit() {
+        return (dimensions - 1) * (CELL_LENGTH + GAP);
     }
 
-    private int calculateYOffsetForEntrance() {
+    private int calculateYOffsetForExit() {
         return (dimensions - 1) * (CELL_LENGTH + GAP);
     }
 

@@ -37,8 +37,8 @@ public class BraidMazeGenerator extends DefaultMazeGenerator {
         traversalGraph = new TraversalGraph(maze);
 
         // 2.Start at entrance (get the entrance cell)
-        int entranceX = x - 1,
-            entranceY = y - 1;
+        int entranceX = 0,
+            entranceY = 0;
 
         int current = maze[entranceX][entranceY];
         traversalCount = 0;
