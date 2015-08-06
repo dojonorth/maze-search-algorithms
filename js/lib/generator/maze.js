@@ -34,5 +34,7 @@ module.exports = function(_x, _y, type) {
     display: display
   };
 
+  console.log('' + maze.representation);
+
   return maze;
 }
