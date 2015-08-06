@@ -153,28 +153,6 @@ public class MazeSolver {
         return String.valueOf(cx) + "," + String.valueOf(cy);
     }
 
-    private int[][] removeRandomDeadEndWall(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
-        HashSet<DefaultMazeGenerator.DIR> availableWallsToRemove = listAvailableInternalDirectionsExcludingOuterWallsAndPreviousTraversal(cx, cy, traversal);
-        Collections.shuffle(Arrays.asList(availableWallsToRemove));
-        DefaultMazeGenerator.DIR wallToRemove;
-        Iterator<DefaultMazeGenerator.DIR> iter = availableWallsToRemove.iterator();
-        while (iter.hasNext()) {
-            wallToRemove = iter.next();
-            maze[cx][cy] += wallToRemove.state;
-            // remove wall form traversal opposite direction
-            // cells store wall location in both directions
-            maze[wallToRemove.dx + cx][wallToRemove.dy + cy] += wallToRemove.opposite.state;
-            return maze;
-        }
-
-        return maze;
-    }
-
-    private int flipBits(int n, int k) {
-        int mask = (1 << k) - 1;
-        return ~n & mask;
-    }
-
     private HashSet<DefaultMazeGenerator.DIR> listAvailableDirectionsExcludingOuterWalls(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
         HashSet<DefaultMazeGenerator.DIR> availableDirections = new HashSet<>();
         availableDirections.add(DefaultMazeGenerator.DIR.N);
