@@ -4,6 +4,7 @@ import bbc.north.dojo.maze.Maze;
 import bbc.north.dojo.maze.Path;
 import bbc.north.dojo.maze.solver.MazeSolver;
 import bbc.north.dojo.maze.viewer.MazeViewer;
+import com.sun.deploy.util.StringUtils;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -47,6 +48,8 @@ public class MazeUI extends Application {
     public static final String MAZE_SIX = "Maze 6 (Braid)";
     public static final String MAZE_SEVEN = "Maze 7 (Braid)";
     public static final String MAZE_EIGHT = "Maze 8 (Braid)";
+    public static final String MAZE_NINE = "Maze 9 (Competition Backtrack)";
+    public static final String MAZE_TEN = "Maze 10 (Competition Braid)";
 
     public static int CELL_LENGTH = 20;
     public static int GAP = 5;
@@ -144,11 +147,6 @@ public class MazeUI extends Application {
             CELL_LENGTH = 20;
             GAP = 5;
 
-            if (Integer.valueOf(dimensionsTextField.getText()) > 24) {
-                CELL_LENGTH = 8;
-                GAP = 2;
-            }
-
             removeBoxBlur(gc);
             // clear old maze
 
@@ -162,7 +160,9 @@ public class MazeUI extends Application {
                     canvas.getWidth());
             setBoxBlur(gc);
 
-            if (preGenComboBox.getValue().toString().equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
+            String preGenSelection = preGenComboBox.getValue().toString();
+
+            if (preGenSelection.equals(DEFAULT_PRE_GEN_MAZE_TYPE)) {
                 if (!"".equals(dimensionsTextField.getText())) {
                     dimensions = Integer.valueOf(dimensionsTextField.getText());
                     try {
@@ -171,22 +171,31 @@ public class MazeUI extends Application {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
                 }
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_ONE)) {
+            } else if (preGenSelection.equals(MAZE_ONE)) {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_ONE);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_TWO)) {
+            } else if (preGenSelection.equals(MAZE_TWO)) {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_TWO);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_THREE)) {
+            } else if (preGenSelection.equals(MAZE_THREE)) {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_THREE);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_FOUR)) {
+            } else if (preGenSelection.equals(MAZE_FOUR)) {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_FOUR);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_FIVE)) {
+            } else if (preGenSelection.equals(MAZE_FIVE)) {
                 maze = new Maze(Maze.BT_MAZE_PROBLEM_FIVE);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_SIX)) {
+            } else if (preGenSelection.equals(MAZE_SIX)) {
                 maze = new Maze(Maze.BRAID_MAZE_PROBLEM_ONE);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_SEVEN)) {
+            } else if (preGenSelection.equals(MAZE_SEVEN)) {
                 maze = new Maze(Maze.BRAID_MAZE_PROBLEM_TWO);
-            } else if (preGenComboBox.getValue().toString().equals(MAZE_EIGHT)) {
+            } else if (preGenSelection.equals(MAZE_EIGHT)) {
                 maze = new Maze(Maze.BRAID_MAZE_PROBLEM_THREE);
+            } else if (preGenSelection.equals(MAZE_NINE)) {
+                maze = new Maze(Maze.BT_MAZE_COMP);
+            } else if (preGenSelection.equals(MAZE_TEN)) {
+                maze = new Maze(Maze.BRAID_MAZE_COMP);
+            }
+
+            if (maze.representation().length > 24) {
+                CELL_LENGTH = 8;
+                GAP = 2;
             }
 
             drawMaze(gc);
@@ -220,7 +229,7 @@ public class MazeUI extends Application {
         ObservableList<String> preGeneratedMazes = FXCollections.observableArrayList(
                 DEFAULT_PRE_GEN_MAZE_TYPE,
                 MAZE_ONE, MAZE_TWO, MAZE_THREE, MAZE_FOUR, MAZE_FIVE,
-                MAZE_SIX, MAZE_SEVEN, MAZE_EIGHT
+                MAZE_SIX, MAZE_SEVEN, MAZE_EIGHT, MAZE_NINE, MAZE_TEN
         );
 
         final ComboBox<String> preGenComboBox = new ComboBox(preGeneratedMazes);
@@ -306,7 +315,7 @@ public class MazeUI extends Application {
                 @Override
                 public void handle(long now) {
                     gc.setFill(Color.FORESTGREEN.deriveColor(0, 1, 1, opacity.get()));
-                    if (Integer.valueOf(dimensionsTextField.getText()) > 24) {
+                    if (maze.representation().length > 24) {
                         gc.fillRect(
                                 entranceX + calculateNextPosX(pathEntry.x, 2) - 20,
                                 entranceY + calculateNextPosY(pathEntry.y, 2) - 176,
