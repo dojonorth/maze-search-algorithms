@@ -48,8 +48,8 @@ public class MazeUI extends Application {
     public static final String MAZE_SEVEN = "Maze 7 (Braid)";
     public static final String MAZE_EIGHT = "Maze 8 (Braid)";
 
-    public static final int CELL_LENGTH = 20;
-    public static final int GAP = 5;
+    public static int CELL_LENGTH = 20;
+    public static int GAP = 5;
 
     final static String DEFAULT_PRE_GEN_MAZE_TYPE = "Custom";
 
@@ -139,6 +139,15 @@ public class MazeUI extends Application {
         btn.setText("Generate Maze");
         btn.setOnAction(event -> {
             System.out.println("Button clicked!");
+
+            // default cell sizes
+            CELL_LENGTH = 20;
+            GAP = 5;
+
+            if (Integer.valueOf(dimensionsTextField.getText()) > 24) {
+                CELL_LENGTH = 8;
+                GAP = 2;
+            }
 
             removeBoxBlur(gc);
             // clear old maze
@@ -273,7 +282,7 @@ public class MazeUI extends Application {
         double entranceY = entranceMarker.getCenterY();
 
         int currentKeyFrameTimeInMs = 0,
-            keyframeTimeInMs = 100;
+            keyframeTimeInMs = 50;
 
         List<KeyFrame> keyFrames = new ArrayList<>();
         List<AnimationTimer> timers = new ArrayList<>();
@@ -286,7 +295,7 @@ public class MazeUI extends Application {
                     new KeyValue(opacity, 0)));
             keyFrames.add(new KeyFrame(
                     Duration.millis(currentKeyFrameTimeInMs + keyframeTimeInMs),
-                    new KeyValue(opacity, 1)));
+                    new KeyValue(opacity, 0.3)));
 
             timeline.setAutoReverse(true);
             timeline.setCycleCount(1);
@@ -297,12 +306,21 @@ public class MazeUI extends Application {
                 @Override
                 public void handle(long now) {
                     gc.setFill(Color.FORESTGREEN.deriveColor(0, 1, 1, opacity.get()));
-                    gc.fillOval(
-                            entranceX + calculateNextPosX(pathEntry.x) - 18,
-                            entranceY + calculateNextPosY(pathEntry.y) - 173,
-                            8,
-                            8
-                    );
+                    if (Integer.valueOf(dimensionsTextField.getText()) > 24) {
+                        gc.fillRect(
+                                entranceX + calculateNextPosX(pathEntry.x, 2) - 20,
+                                entranceY + calculateNextPosY(pathEntry.y, 2) - 176,
+                                CELL_LENGTH,
+                                CELL_LENGTH
+                        );
+                    } else {
+                        gc.fillRect(
+                                entranceX + calculateNextPosX(pathEntry.x, 5) - 23,
+                                entranceY + calculateNextPosY(pathEntry.y, 5) - 178,
+                                CELL_LENGTH,
+                                CELL_LENGTH
+                        );
+                    }
                 }
             });
         }
@@ -315,13 +333,13 @@ public class MazeUI extends Application {
         timeline.play();
     }
 
-    private int calculateNextPosX(int x) {
-        int shiftBy = (x * (CELL_LENGTH + 5)) + GAP;
+    private int calculateNextPosX(int x, int buffer) {
+        int shiftBy = (x * (CELL_LENGTH + buffer)) + GAP;
         return shiftBy;
     }
 
-    private int calculateNextPosY(int y) {
-        int shiftBy = (y * (CELL_LENGTH + 5)) + GAP;
+    private int calculateNextPosY(int y, int buffer) {
+        int shiftBy = (y * (CELL_LENGTH + buffer)) + GAP;
         return shiftBy;
     }
 
