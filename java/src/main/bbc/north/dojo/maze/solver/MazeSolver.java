@@ -135,9 +135,15 @@ public class MazeSolver {
     private void traverseToNextIntersection(int traversalCount) throws Throwable {
         int intersectionTraversals;
         if (toVisit.size() > 0) {
-            Intersection nextIntersection = toVisit.get(toVisit.keySet().iterator().next()); // get the last intersection (always work from the back -- more efficient)
-            int nx = nextIntersection.x;
-            int ny = nextIntersection.y;
+            Iterator<String> toVisitIter = toVisit.keySet().iterator();
+            Intersection nextIntersection = toVisit.get(toVisitIter.next());
+
+            while (toVisitIter.hasNext()) {
+                nextIntersection = toVisit.get(toVisitIter.next());
+            }
+
+            int nx = nextIntersection.x,
+                ny = nextIntersection.y;
 
             intersectionTraversals = traversalGraph.state(nx, ny);
 
