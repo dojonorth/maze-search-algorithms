@@ -74,7 +74,7 @@ module.exports = function(doc, elemId, maze) {
             xPos = 0;
             // draw the north edge
             for (var j = 0; j < dimensions; j++) {
-                if ((maze.representation[j][i] & 1) == 0 && j != 0) {
+                if ((maze.representation[j][i] & 1) == 0) {
                     this.drawLine(xPos, yPos, xPos + self.cellHeight, yPos); // horizontal
                 }
                 xPos += self.cellHeight;
