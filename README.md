@@ -78,6 +78,14 @@ The solve button is hooked up to an empty method in the solution.js file. This i
 
 Your algorithm should generate and return an array of arrays containing [x,y] coordinates for each cell visited. You can then visualise your algorithm by pressing the solve button in the UI. The UI will present you with a score for your solution for the current maze. The aim is to get the number as low as possible.
 
+### Gotchas
+
+console.log won't print out unless you convert the thing you are attempting to log into a string.
+
+Prefix with '' + JSON.stringify. Eg:
+
+```console.log('' + JSON.stringify(maze));```
+
 ## Data Structure
 
 ### Direction Enum
