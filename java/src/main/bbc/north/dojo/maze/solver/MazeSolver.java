@@ -6,6 +6,8 @@ import bbc.north.dojo.maze.generator.MazeGenerationFailureException;
 
 import java.util.*;
 
+import static bbc.north.dojo.maze.generator.DefaultMazeGenerator.*;
+
 public class MazeSolver {
 
     private final int[][] maze;
@@ -47,14 +49,14 @@ public class MazeSolver {
     private int[][] traverse(Traversal traversal, int traversalCount) throws Throwable {
         // Recursive follow Loop probably starts here
         // 3.If there is one option take it
-        DefaultMazeGenerator.DIR availableDirection;
+        DIR availableDirection;
         int cx = traversal.toX(),
                 cy = traversal.toY();
 
         int availableTraversals = traversalGraph.state(cx, cy);
         if (!isExit(cx, cy)) {
             if (hasOneAvailableRoute(availableTraversals)) {
-                availableDirection = DefaultMazeGenerator.DIR.toTraversalDirection(availableTraversals);
+                availableDirection = DIR.toTraversalDirection(availableTraversals);
 
                 // 7.Remove from the 'toVisit' queue
                 ifInToVisitQueueRemoveIt(cx, cy);
@@ -66,7 +68,7 @@ public class MazeSolver {
             } else if (hasMoreThanOneAvailableRoute(availableTraversals)) {
     //            int availableDirections = listOfAvailableDirections(cx, cy);
 
-                availableDirection = selectRandomDirection(availableTraversals);
+                availableDirection = selectBestDirection(availableTraversals);
 
                 int nextDirectionState = traversalGraph.state(availableDirection.dx + cx, availableDirection.dy + cy);
 
@@ -113,7 +115,7 @@ public class MazeSolver {
         }
     }
 
-    private void traverseInNextDirection(int cx, int cy, int traversalCount, DefaultMazeGenerator.DIR availableDirection, int availableTraversals) throws Throwable {
+    private void traverseInNextDirection(int cx, int cy, int traversalCount, DIR availableDirection, int availableTraversals) throws Throwable {
         traversalGraph.oneLessTraversal(cx, cy, availableDirection);
 
         if (traversalCount <= x * y) {
@@ -135,12 +137,8 @@ public class MazeSolver {
     private void traverseToNextIntersection(int traversalCount) throws Throwable {
         int intersectionTraversals;
         if (toVisit.size() > 0) {
-            Iterator<String> toVisitIter = toVisit.keySet().iterator();
-            Intersection nextIntersection = toVisit.get(toVisitIter.next());
-
-            while (toVisitIter.hasNext()) {
-                nextIntersection = toVisit.get(toVisitIter.next());
-            }
+//            Iterator<String> toVisitIter = toVisit.keySet().iterator();
+            Intersection nextIntersection = getNextBestIntersection();
 
             int nx = nextIntersection.x,
                 ny = nextIntersection.y;
@@ -149,6 +147,32 @@ public class MazeSolver {
 
             traverse(new Traversal(intersectionTraversals, nx, ny),  traversalCount);
         }
+    }
+
+    private Intersection getNextBestIntersection() {
+        Set<String> keys = new TreeSet<>();
+        keys.addAll(toVisit.keySet());
+
+        int distance = 0,
+            furthestDistance = 0;
+
+        String furthestKey = null;
+        for (String key: keys) {
+            String[] coords = key.split(",");
+            distance = Integer.valueOf(coords[0]) + Integer.valueOf(coords[1]);
+            if (distance > furthestDistance) {
+                furthestDistance = distance;
+                furthestKey = key;
+            }
+        }
+        Intersection nextIntersection = toVisit.get(furthestKey);
+
+//        Iterator<String> toVisitIter = keys.iterator();
+//        while (toVisitIter.hasNext()) {
+//            nextIntersection = toVisit.get(toVisitIter.next());
+//        }
+
+        return nextIntersection;
     }
 
     private boolean traversed(int traversalState) {
@@ -161,37 +185,49 @@ public class MazeSolver {
 
     private HashSet<DefaultMazeGenerator.DIR> listAvailableDirectionsExcludingOuterWalls(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
         HashSet<DefaultMazeGenerator.DIR> availableDirections = new HashSet<>();
-        availableDirections.add(DefaultMazeGenerator.DIR.N);
-        availableDirections.add(DefaultMazeGenerator.DIR.E);
-        availableDirections.add(DefaultMazeGenerator.DIR.W);
-        availableDirections.add(DefaultMazeGenerator.DIR.S);
+        availableDirections.add(DIR.N);
+        availableDirections.add(DIR.E);
+        availableDirections.add(DIR.W);
+        availableDirections.add(DIR.S);
 
         if (isAdjacentToSouthWall(cy)) {
-            availableDirections.remove(DefaultMazeGenerator.DIR.S);
+            availableDirections.remove(DIR.S);
         }
         if (isAdjacentToNorthWall(cy)) {
-            availableDirections.remove(DefaultMazeGenerator.DIR.N);
+            availableDirections.remove(DIR.N);
         }
         if (isAdjacentToWestWall(cx)) {
-            availableDirections.remove(DefaultMazeGenerator.DIR.W);
+            availableDirections.remove(DIR.W);
         }
         if (isAdjacentToEastWall(cx)) {
-            availableDirections.remove(DefaultMazeGenerator.DIR.E);
+            availableDirections.remove(DIR.E);
         }
 
         return availableDirections;
     }
 
-    private HashSet<DefaultMazeGenerator.DIR> listAvailableInternalDirectionsExcludingOuterWallsAndPreviousTraversal(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
-        HashSet<DefaultMazeGenerator.DIR> availableDirections = listAvailableDirectionsExcludingOuterWalls(cx, cy, traversal);
-        availableDirections.remove(traversal.previous.opposite);
-        return availableDirections;
+//    private HashSet<DefaultMazeGenerator.DIR> listAvailableInternalDirectionsExcludingOuterWallsAndPreviousTraversal(int cx, int cy, Traversal traversal) throws MazeGenerationFailureException {
+//        HashSet<DefaultMazeGenerator.DIR> availableDirections = listAvailableDirectionsExcludingOuterWalls(cx, cy, traversal);
+//        availableDirections.remove(traversal.previous.opposite);
+//        return availableDirections;
+//    }
+
+    private DIR selectBestDirection(int availableTraversals) {
+        DIR[] availableDirections = DIR.toArray(availableTraversals);
+        Collections.shuffle(Arrays.asList(availableDirections));
+
+        DIR bestDirection = availableDirections[0]; // best is by default random
+
+        return preferSouthAndEastDirectionsOverNorthAndWest(availableDirections, bestDirection);
     }
 
-    private DefaultMazeGenerator.DIR selectRandomDirection(int availableTraversals) {
-        DefaultMazeGenerator.DIR[] availableDirections = DefaultMazeGenerator.DIR.toArray(availableTraversals);
-        Collections.shuffle(Arrays.asList(availableDirections));
-        return availableDirections[0];
+    private DIR preferSouthAndEastDirectionsOverNorthAndWest(DIR[] availableDirections, DIR bestDirection) {
+        for (DIR availableDirection: availableDirections) {
+            if (availableDirection == DIR.S || availableDirection == DIR.E) {
+                bestDirection = availableDirection;
+            }
+        }
+        return bestDirection;
     }
 
     private boolean hasOneAvailableRoute(int traversalState) {

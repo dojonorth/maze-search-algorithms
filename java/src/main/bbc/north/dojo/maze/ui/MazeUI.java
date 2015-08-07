@@ -291,7 +291,7 @@ public class MazeUI extends Application {
         double entranceY = entranceMarker.getCenterY();
 
         int currentKeyFrameTimeInMs = 0,
-            keyframeTimeInMs = 100;
+            keyframeTimeInMs = 50;
 
         List<KeyFrame> keyFrames = new ArrayList<>();
         List<AnimationTimer> timers = new ArrayList<>();
