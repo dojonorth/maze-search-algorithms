@@ -23,3 +23,7 @@ label {
   margin: auto auto; 
   display: block;
 }
+
+#solve {
+  margin-left: 160px;
+}
