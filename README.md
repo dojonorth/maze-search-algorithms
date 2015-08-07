@@ -137,9 +137,32 @@ The expected output for your Solver should be to calculate the path, so for ever
 
 
 ## Solution
-Your solver should calculate a legitimate unbroken path taken from Entrance (top left) to Exit (bottom right) to be considered as a solution to the problem. Unlike garden mazes without the aid of a ladder, powertool, shovel, brute force or a stick of dynamite, you should not traverse through, under or over walls when solving it.
+Your solver should calculate a legitimate unbroken path taken from Entrance (top left) to Exit (bottom right) to be considered as a solution to the problem. Unlike garden mazes, without the aid of a ladder, powertool, shovel, brute force or a stick of dynamite, you should not traverse through, under or over walls when solving it.
 
+# Types of Mazes
 
+## Recursive Backtrack
+So called 'perfect mazes' because there is exactly one, and only one route between every corner in the maze.
+
+## Braid
+Braid mazes are essentially mazes that have few to no dead ends. They can produce complex mazes when designed correctly (although sometimes they make it too easy!).
+
+# Exercises
+
+## Exercise 1
+Think of an algorithm to solve any recursive backtracker maze. We recommend you pair on this exercise and come up with pseudocode for generating your algorithm to solve any recursive backtracking maze.
+
+## Exercise 2
+Implement it so that it will display a solution using the Solve button on the User Interface.
+
+## Exercise 3
+Think of another algorithm (or re-use your existing algorithm) to solve a braid maze
+
+## Bonus
+Think of ways you can improve this algorithm to reduce the number of steps required to calculate a path
+
+## Competition
+Run your algorithm against both competition mazes. Add up the efficiency of your algorithm on both mazes. Lowest score wins. Highest score loses - GO!
 
 
 
