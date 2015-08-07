@@ -164,5 +164,7 @@ Think of ways you can improve this algorithm to reduce the number of steps requi
 ## Competition
 Run your algorithm against both competition mazes. Add up the efficiency of your algorithm on both mazes. Lowest score wins. Highest score loses - GO!
 
+p.s. no hardcoding path directions - we will be checking :) - good luck!
+
 
 
