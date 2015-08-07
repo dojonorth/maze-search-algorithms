@@ -62,6 +62,10 @@ To launch the UI run :
 
 ``` npm start ```
 
+It might be a good idea to increase the maximum callstack in node, for larger mazes. Run:
+
+``` node --stack-size=100000 ```
+
 ### The UI
 
 The UI may launch in the background.
