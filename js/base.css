@@ -24,6 +24,11 @@ label {
   display: block;
 }
 
+#efficiency {
+  width: 157px;
+  display: inline-block;
+}
+
 #solve {
-  margin-left: 160px;
+
 }
