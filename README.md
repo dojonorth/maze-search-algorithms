@@ -62,6 +62,10 @@ To launch the UI run :
 
 ``` npm start ```
 
+It might be a good idea to increase the maximum callstack in node, for larger mazes. Run:
+
+``` node --stack-size=100000 ```
+
 ### The UI
 
 The UI may launch in the background.
@@ -73,6 +77,14 @@ The solve button is hooked up to an empty method in the solution.js file. This i
 ### Aim
 
 Your algorithm should generate and return an array of arrays containing [x,y] coordinates for each cell visited. You can then visualise your algorithm by pressing the solve button in the UI. The UI will present you with a score for your solution for the current maze. The aim is to get the number as low as possible.
+
+### Gotchas
+
+console.log won't print out unless you convert the thing you are attempting to log into a string.
+
+Prefix with '' + JSON.stringify. Eg:
+
+```console.log('' + JSON.stringify(maze));```
 
 ## Data Structure
 
@@ -163,6 +175,8 @@ Think of ways you can improve this algorithm to reduce the number of steps requi
 
 ## Competition
 Run your algorithm against both competition mazes. Add up the efficiency of your algorithm on both mazes. Lowest score wins. Highest score loses - GO!
+
+p.s. no hardcoding path directions - we will be checking :) - good luck!
 
 
 

@@ -123,13 +123,13 @@ public class MazeUI extends Application {
         grid.getColumnConstraints().add(labelConstraints);
 
         grid.add(dimensionsLabel, 0, 0);
-        grid.add(dimensionsTextField, 0, 1);
+        grid.add(dimensionsTextField, 1, 0);
 
         final ComboBox mazeGenComboBox = addMazeGeneratorComboBox();
         final ComboBox<String> preGenComboBox = addPreGeneratedMazeTypes();
 
-        grid.add(mazeGenComboBox, 3, 1);
-        grid.add(preGenComboBox, 3, 2);
+        grid.add(mazeGenComboBox, 2, 0);
+        grid.add(preGenComboBox, 3, 0);
 
         Circle entranceMarker = new Circle(calculateTopLeftCellX(), calculateTopLeftCellY(), 5, Color.web("blue", 0.5));
         root.getChildren().add(entranceMarker);
@@ -217,10 +217,10 @@ public class MazeUI extends Application {
             }
         });
 
-        grid.add(btn, 0, 4);
-        grid.add(solveMazeBtn, 3, 4);
-        grid.add(efficiencyLabel, 4, 4);
-        grid.add(canvas, 0, 5);
+        grid.add(btn, 0, 1);
+        grid.add(solveMazeBtn, 2, 1);
+        grid.add(efficiencyLabel, 3, 1);
+        grid.add(canvas, 0, 2);
         root.getChildren().add(grid);
     }
 
