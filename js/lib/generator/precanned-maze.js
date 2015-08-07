@@ -51,7 +51,6 @@ module.exports = function(mazeProblem) {
       precannedMaze = braidProblemThree;
       break;
     case 'brCompOne':
-      console.log('loading ' + brCompOne)
       precannedMaze = brCompOne;
       break;
     case 'brCompTwo':
