@@ -1,11 +1,10 @@
 # North Dojo: Amazing Algorithms
 This dojo is specifically designed to make participants think about how you might approach algorithm design for solving different types of Mazes. Also it's intended to encourage participants to think about how they might improve upon the design of their algorithms so that their algorithm finds a quicker path.
 
-# Setup Instructions
+## Setup Instructions
 
-## Java
+### Java
 
-### Setup
 To get started you'll need:
 
   * Install of IntelliJ 14 Community Edition ([Download IntelliJ](https://www.jetbrains.com/idea/download/))
@@ -37,17 +36,21 @@ If you need assistance please let us know during the dojo.
 
 ## User Interface
 
-The user interface allows you to randomly generate
+The Java user interface allows you to randomly generate either a [Recursive Backtrack](http://weblog.jamisbuck.org/2010/12/27/maze-generation-recursive-backtracking) Maze or a [Braid](https://www.reddit.com/r/proceduralgeneration/comments/37x0hr/braid_maze_generation_algorithms/) Maze. The Java UI supports up to 60x60 realistically since that the maximum size dimension maze you can fit on your screen. It only currently supports square mazes.
 
-### Starting the UI
+### Pre-generated Mazes
+There are some pre-generated mazes you can select from the dropdown. If you have "Custom" selected in the dropdown then it will automatically generate a new maze using the current algorithm you have selected so that you can try out your maze solving algorithm. 
+
+### Competition Mazes
+We have two competition mazes of size 60x60 you can try for the final exercise. Recursive Backtracking and Braid maze.
+
+### How to start the UI?
 
 Right-click the MazeUI class in the Project view and select "Run MazeUI.main()"
 
 You should see the UI displayed after a few seconds
 
 ## Javascript
-
-### Setup
 
 Clone the repo and cd into the js folder.
 
@@ -125,14 +128,16 @@ If you take a look under the hood you'll notice that at the core of the data str
     }
 ```
 
-The DIR enum essentially represents the Direction of traversal as a 4 bit integer i.e. 1 = North, 2 = West, 4 = East and 8 = South. This is done this way because it makes performing bit arithmetic operations on an object extremely quick. For example, the position of walls for a cell where that only has one exit is simply a bitwise NOT of that direction e.g. Bitwise Not of N == S, E, W.
+The DIR enum essentially represents the Direction of traversal as a 4 bit integer i.e. 1 = North, 2 = West, 4 = East and 8 = South. This is done this way because performing bit arithmetic operations is extremely quick. For example, the position of walls for a cell where that only has one exit is simply a bitwise NOT of that direction e.g. Bitwise Not of N == S, E, W. That is fundamentally a fast operation in the CPU.
 
-Representing data by using bit representations is a classic technique for increasing the speed of applications because we keep the application footprint slow and we make arithmetic operations fast (since we're just shifting bits around in memory). If we were to use objects instead, for example, we'd have to look up the references to those objects in the in-memory cache, which would be significantly slower than shifting bits in place.
+Representing data structures by using bit representations is a classic technique for increasing the speed of applications because we keep the application footprint slow and we make arithmetic operations fast (since we're just shifting bits around in memory and caches). If we were to use objects instead, for example, we'd have to look up the references to those objects in the in-memory cache and follow references to the data, which would be significantly slower than shifting bits in place (since you have to perform many operations as opposed to a few).
 
 ## Expected output
 The expected output for your Solver should be to calculate the path, so for every traversal you make you'll need to store it in either a Path object (in the Java exercise) containing x and y coordinates or represent it as a json object with x and y values representing the position of the traversal in the maze.
 
-Your solver should calculate a legitimate unbroken path taken from Entrance (top left) to Exit (bottom right).
+
+## Solution
+Your solver should calculate a legitimate unbroken path taken from Entrance (top left) to Exit (bottom right) to be considered as a solution to the problem. Unlike garden mazes without the aid of a ladder, powertool, shovel, brute force or a stick of dynamite, you should not traverse through, under or over walls when solving it.
 
 
 
